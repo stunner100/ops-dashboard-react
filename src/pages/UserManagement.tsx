@@ -127,10 +127,19 @@ export function UserManagement() {
                 }
             );
 
-            const result = await response.json();
+            // Handle response - may be empty or JSON
+            const responseText = await response.text();
+            let result = null;
+            if (responseText) {
+                try {
+                    result = JSON.parse(responseText);
+                } catch {
+                    // Response is not JSON
+                }
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || 'Failed to delete user');
+                throw new Error(result?.error || `Failed to delete user (${response.status})`);
             }
 
             // Update local state
