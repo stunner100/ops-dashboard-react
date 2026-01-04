@@ -648,6 +648,54 @@ export function useTeamChat() {
         };
     }, [currentDM, chatMode, loadDMMessages, subscribeToDMMessages]);
 
+    /**
+     * Delete a channel (admin only)
+     */
+    const deleteChannel = useCallback(async (channelId: string): Promise<boolean> => {
+        setError(null);
+        try {
+            // First delete all messages in the channel
+            const { error: messagesError } = await supabase
+                .from('chat_messages')
+                .delete()
+                .eq('channel_id', channelId);
+
+            if (messagesError) {
+                console.error('Error deleting messages:', messagesError);
+                // Continue anyway to try to delete the channel
+            }
+
+            // Delete the channel
+            const { error: deleteError } = await supabase
+                .from('chat_channels')
+                .delete()
+                .eq('id', channelId);
+
+            if (deleteError) throw deleteError;
+
+            // If deleted channel was the current channel, switch to another
+            if (currentChannel?.id === channelId) {
+                const remainingChannels = channels.filter(c => c.id !== channelId);
+                if (remainingChannels.length > 0) {
+                    setCurrentChannel(remainingChannels[0]);
+                    await loadMessages(remainingChannels[0].id);
+                } else {
+                    setCurrentChannel(null);
+                    setMessages([]);
+                }
+            }
+
+            // Reload channels list
+            await loadChannels();
+
+            return true;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to delete channel';
+            setError(message);
+            return false;
+        }
+    }, [currentChannel, channels, loadChannels, loadMessages]);
+
     return {
         // Channel state
         channels,
@@ -674,6 +722,7 @@ export function useTeamChat() {
         sendMessage,
         uploadFile,
         createChannel,
+        deleteChannel,
 
         // DM actions
         loadDMConversations,

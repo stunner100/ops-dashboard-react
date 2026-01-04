@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type FormEvent, type ChangeEvent } from 'react';
 import { Header } from '../components/layout';
-import { Send, Hash, Lock, Smile, Paperclip, Search, Users, Plus, Loader2, MessageSquare, X, Image, FileText, User, ChevronLeft } from 'lucide-react';
+import { Send, Hash, Lock, Smile, Paperclip, Search, Users, Plus, Loader2, MessageSquare, X, Image, FileText, User, ChevronLeft, Trash2 } from 'lucide-react';
 import { useTeamChat, type ChannelMember } from '../hooks';
 import { useAuth } from '../context/AuthContext';
 import { EmojiPicker } from '../components/EmojiPicker';
@@ -23,13 +23,14 @@ export function TeamChat() {
     sendMessage,
     uploadFile,
     createChannel,
+    deleteChannel,
     switchToDM,
     startDMConversation,
     sendDirectMessage,
     loadAllProfiles,
   } = useTeamChat();
 
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const [messageInput, setMessageInput] = useState('');
   const [showMembers, setShowMembers] = useState(true);
@@ -46,6 +47,8 @@ export function TeamChat() {
   const [, setUploading] = useState(false);
   const [dmSearchQuery, setDMSearchQuery] = useState('');
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+  const [deleteChannelConfirm, setDeleteChannelConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -383,15 +386,26 @@ export function TeamChat() {
                 </div>
                 <div className="flex items-center gap-1 pl-2">
                   {chatMode === 'channel' && (
-                    <button
-                      onClick={() => setShowMembers(!showMembers)}
-                      className={`p-1.5 rounded-md transition-all ${showMembers
-                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                        }`}
-                    >
-                      <Users className="w-4.5 h-4.5" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setShowMembers(!showMembers)}
+                        className={`p-1.5 rounded-md transition-all ${showMembers
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                          }`}
+                      >
+                        <Users className="w-4.5 h-4.5" />
+                      </button>
+                      {isAdmin && currentChannel && (
+                        <button
+                          onClick={() => setDeleteChannelConfirm(currentChannel.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                          title="Delete channel"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </>
                   )}
                   <div className="hidden md:block w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
                   <button className="hidden md:block p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-md transition-colors">
@@ -855,6 +869,50 @@ export function TeamChat() {
                   </ul>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Channel Confirmation Modal */}
+      {deleteChannelConfirm && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 ring-1 ring-white/20 animate-slide-up">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white text-center mb-2">
+              Delete Channel
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 text-center mb-6">
+              Are you sure you want to delete <strong className="text-slate-900 dark:text-white">#{currentChannel?.name}</strong>? All messages will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteChannelConfirm(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!deleteChannelConfirm) return;
+                  setDeleting(true);
+                  await deleteChannel(deleteChannelConfirm);
+                  setDeleting(false);
+                  setDeleteChannelConfirm(null);
+                }}
+                disabled={deleting}
+                className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                Delete
+              </button>
             </div>
           </div>
         </div>
