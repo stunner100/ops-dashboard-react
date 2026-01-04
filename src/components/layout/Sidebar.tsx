@@ -5,7 +5,6 @@ import {
   BookOpen,
   MessageSquare,
   Bell,
-  Upload,
   Users,
   X,
 } from 'lucide-react';
@@ -27,7 +26,6 @@ const navigation: NavItem[] = [
   { name: 'Team Chat', href: '/chat', icon: MessageSquare },
   { name: 'Inbox', href: '/notifications', icon: Bell },
   { name: 'User Management', href: '/admin/users', icon: Users, adminOnly: true },
-  { name: 'Ingest Data', href: '/ingest', icon: Upload, adminOnly: true },
 ];
 
 export function Sidebar() {
