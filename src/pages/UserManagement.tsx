@@ -109,19 +109,36 @@ export function UserManagement() {
     const deleteUser = async (userId: string) => {
         try {
             setActionLoading(userId);
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', userId);
 
-            if (error) throw error;
+            // Get the current session for authorization
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No session');
+
+            // Call the Edge Function to delete the user from auth.users
+            const response = await fetch(
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ userId }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to delete user');
+            }
 
             // Update local state
             setUsers(users.filter(u => u.id !== userId));
             setDeleteConfirm(null);
         } catch (err) {
             console.error('Error deleting user:', err);
-            setError('Failed to delete user');
+            setError(err instanceof Error ? err.message : 'Failed to delete user');
         } finally {
             setActionLoading(null);
         }
