@@ -1,0 +1,210 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+
+export type TaskCategory = 'vendor_ops' | 'rider_fleet' | 'customer_service';
+export type TaskStatus = 'pending' | 'in-progress' | 'urgent' | 'completed';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
+
+export interface Task {
+    id: string;
+    title: string;
+    description?: string | null;
+    category: TaskCategory;
+    status: TaskStatus;
+    priority: TaskPriority;
+    start_date?: string | null;
+    due_date?: string | null;
+    assignee_id?: string | null;
+    assignee_name?: string | null;
+    created_by?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface TaskInput {
+    title: string;
+    description?: string;
+    category: TaskCategory;
+    status?: TaskStatus;
+    priority?: TaskPriority;
+    start_date?: string;
+    due_date?: string;
+    assignee_id?: string;
+    assignee_name?: string;
+}
+
+export interface TaskFilters {
+    category?: TaskCategory[];
+    status?: TaskStatus[];
+    priority?: TaskPriority[];
+    assignee_id?: string;
+}
+
+export function useTasks() {
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
+
+    // Fetch all tasks
+    const fetchTasks = useCallback(async () => {
+        try {
+            setLoading(true);
+            const { data, error: fetchError } = await supabase
+                .from('tasks')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (fetchError) throw fetchError;
+            setTasks(data || []);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching tasks:', err);
+            setError('Failed to fetch tasks');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Create a new task
+    const createTask = async (input: TaskInput): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const newTask = {
+                ...input,
+                status: input.status || 'pending',
+                priority: input.priority || 'medium',
+                created_by: user?.id,
+            };
+
+            const { data, error: createError } = await supabase
+                .from('tasks')
+                .insert(newTask)
+                .select()
+                .single();
+
+            if (createError) throw createError;
+
+            // Optimistically update local state
+            setTasks((prev) => [data, ...prev]);
+            return { success: true };
+        } catch (err) {
+            console.error('Error creating task:', err);
+            return { success: false, error: 'Failed to create task' };
+        }
+    };
+
+    // Update an existing task
+    const updateTask = async (id: string, updates: Partial<TaskInput>): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { data, error: updateError } = await supabase
+                .from('tasks')
+                .update(updates)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (updateError) throw updateError;
+
+            // Update local state
+            setTasks((prev) => prev.map((t) => (t.id === id ? data : t)));
+            return { success: true };
+        } catch (err) {
+            console.error('Error updating task:', err);
+            return { success: false, error: 'Failed to update task' };
+        }
+    };
+
+    // Delete a task
+    const deleteTask = async (id: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error: deleteError } = await supabase
+                .from('tasks')
+                .delete()
+                .eq('id', id);
+
+            if (deleteError) throw deleteError;
+
+            // Remove from local state
+            setTasks((prev) => prev.filter((t) => t.id !== id));
+            return { success: true };
+        } catch (err) {
+            console.error('Error deleting task:', err);
+            return { success: false, error: 'Failed to delete task' };
+        }
+    };
+
+    // Update task status (for drag & drop)
+    const updateTaskStatus = async (id: string, status: TaskStatus): Promise<{ success: boolean; error?: string }> => {
+        return updateTask(id, { status });
+    };
+
+    // Initial fetch
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
+
+    // Real-time subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('tasks-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'tasks',
+                },
+                (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        setTasks((prev) => {
+                            // Avoid duplicates
+                            if (prev.find((t) => t.id === payload.new.id)) return prev;
+                            return [payload.new as Task, ...prev];
+                        });
+                    } else if (payload.eventType === 'UPDATE') {
+                        setTasks((prev) =>
+                            prev.map((t) => (t.id === payload.new.id ? (payload.new as Task) : t))
+                        );
+                    } else if (payload.eventType === 'DELETE') {
+                        setTasks((prev) => prev.filter((t) => t.id !== payload.old.id));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    return {
+        tasks,
+        loading,
+        error,
+        createTask,
+        updateTask,
+        deleteTask,
+        updateTaskStatus,
+        refetch: fetchTasks,
+    };
+}
+
+// Helper to filter tasks
+export function filterTasks(tasks: Task[], filters: TaskFilters): Task[] {
+    return tasks.filter((task) => {
+        if (filters.category?.length && !filters.category.includes(task.category)) {
+            return false;
+        }
+        if (filters.status?.length && !filters.status.includes(task.status)) {
+            return false;
+        }
+        if (filters.priority?.length && !filters.priority.includes(task.priority)) {
+            return false;
+        }
+        if (filters.assignee_id && task.assignee_id !== filters.assignee_id) {
+            return false;
+        }
+        return true;
+    });
+}

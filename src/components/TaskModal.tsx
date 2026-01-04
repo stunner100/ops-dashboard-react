@@ -1,0 +1,288 @@
+import { useState, useEffect } from 'react';
+import { X, Calendar, User, Tag, AlertCircle, Flag, Loader2 } from 'lucide-react';
+import type { Task, TaskInput, TaskCategory, TaskStatus, TaskPriority } from '../hooks/useTasks';
+
+interface TaskModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: TaskInput) => Promise<{ success: boolean; error?: string }>;
+    task?: Task | null; // If provided, we're editing
+    mode: 'create' | 'edit';
+}
+
+const categories: { value: TaskCategory; label: string }[] = [
+    { value: 'vendor_ops', label: 'Vendor Ops' },
+    { value: 'rider_fleet', label: 'Rider Fleet' },
+    { value: 'customer_service', label: 'Customer Service' },
+];
+
+const statuses: { value: TaskStatus; label: string; color: string }[] = [
+    { value: 'pending', label: 'Pending', color: 'bg-slate-400' },
+    { value: 'in-progress', label: 'In Progress', color: 'bg-primary-500' },
+    { value: 'urgent', label: 'Urgent', color: 'bg-red-500' },
+    { value: 'completed', label: 'Completed', color: 'bg-emerald-500' },
+];
+
+const priorities: { value: TaskPriority; label: string; color: string }[] = [
+    { value: 'low', label: 'Low', color: 'text-slate-500' },
+    { value: 'medium', label: 'Medium', color: 'text-primary-500' },
+    { value: 'high', label: 'High', color: 'text-orange-500' },
+    { value: 'critical', label: 'Critical', color: 'text-red-500' },
+];
+
+export function TaskModal({ isOpen, onClose, onSubmit, task, mode }: TaskModalProps) {
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState<TaskCategory>('vendor_ops');
+    const [status, setStatus] = useState<TaskStatus>('pending');
+    const [priority, setPriority] = useState<TaskPriority>('medium');
+    const [startDate, setStartDate] = useState('');
+    const [dueDate, setDueDate] = useState('');
+    const [assigneeName, setAssigneeName] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    // Reset form when modal opens or task changes
+    useEffect(() => {
+        if (isOpen) {
+            if (task) {
+                setTitle(task.title);
+                setDescription(task.description || '');
+                setCategory(task.category);
+                setStatus(task.status);
+                setPriority(task.priority);
+                setStartDate(task.start_date || '');
+                setDueDate(task.due_date || '');
+                setAssigneeName(task.assignee_name || '');
+            } else {
+                setTitle('');
+                setDescription('');
+                setCategory('vendor_ops');
+                setStatus('pending');
+                setPriority('medium');
+                setStartDate('');
+                setDueDate('');
+                setAssigneeName('');
+            }
+            setError('');
+        }
+    }, [isOpen, task]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title.trim()) {
+            setError('Title is required');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        const taskData: TaskInput = {
+            title: title.trim(),
+            description: description.trim() || undefined,
+            category,
+            status,
+            priority,
+            start_date: startDate || undefined,
+            due_date: dueDate || undefined,
+            assignee_name: assigneeName.trim() || undefined,
+        };
+
+        const result = await onSubmit(taskData);
+
+        setLoading(false);
+
+        if (result.success) {
+            onClose();
+        } else {
+            setError(result.error || 'An error occurred');
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                onClick={onClose}
+            />
+
+            {/* Modal */}
+            <div className="relative w-full max-w-lg max-h-[85vh] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-slide-up flex flex-col">
+                {/* Header */}
+                <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        {mode === 'create' ? 'Create New Task' : 'Edit Task'}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
+                    {error && (
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Title */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Title <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Enter task title"
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Add a description (optional)"
+                            rows={3}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                        />
+                    </div>
+
+                    {/* Category & Status Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <Tag className="w-3.5 h-3.5 inline mr-1" />
+                                Category
+                            </label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value as TaskCategory)}
+                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            >
+                                {categories.map((cat) => (
+                                    <option key={cat.value} value={cat.value}>
+                                        {cat.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                Status
+                            </label>
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            >
+                                {statuses.map((s) => (
+                                    <option key={s.value} value={s.value}>
+                                        {s.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Priority */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <Flag className="w-3.5 h-3.5 inline mr-1" />
+                            Priority
+                        </label>
+                        <select
+                            value={priority}
+                            onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        >
+                            {priorities.map((p) => (
+                                <option key={p.value} value={p.value}>
+                                    {p.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Start Date & Due Date Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                                Start Date
+                            </label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                                Due Date
+                            </label>
+                            <input
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Assignee */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <User className="w-3.5 h-3.5 inline mr-1" />
+                            Assignee
+                        </label>
+                        <input
+                            type="text"
+                            value={assigneeName}
+                            onChange={(e) => setAssigneeName(e.target.value)}
+                            placeholder="Enter assignee name"
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                            {loading ? 'Saving...' : mode === 'create' ? 'Create Task' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
