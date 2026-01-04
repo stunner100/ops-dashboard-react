@@ -6,7 +6,8 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'admin';
+  role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'admin';
+  is_approved: boolean;
   created_at: string;
 }
 
@@ -17,8 +18,9 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager') => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager') => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
@@ -90,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: user.email || '',
             full_name: user.user_metadata?.full_name || null,
             role: user.user_metadata?.role || 'customer_service',
+            is_approved: false,
             created_at: new Date().toISOString(),
           });
         }
@@ -138,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: user.email || '',
                 full_name: user.user_metadata?.full_name || null,
                 role: user.user_metadata?.role || 'customer_service',
+                is_approved: false,
                 created_at: new Date().toISOString(),
               });
             } else {
@@ -155,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: user.email || '',
               full_name: user.user_metadata?.full_name || null,
               role: user.user_metadata?.role || 'customer_service',
+              is_approved: false,
               created_at: new Date().toISOString(),
             });
           }
@@ -173,6 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: user.email || '',
             full_name: user.user_metadata?.full_name || null,
             role: user.user_metadata?.role || 'customer_service',
+            is_approved: false,
             created_at: new Date().toISOString(),
           });
         }
@@ -189,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager') => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager') => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -245,6 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isAuthenticated: !!user,
     isAdmin: profile?.role === 'admin',
+    isApproved: profile?.is_approved ?? false,
     signIn,
     signUp,
     signOut,

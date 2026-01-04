@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Bell,
   Upload,
+  Users,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +26,7 @@ const navigation: NavItem[] = [
   { name: 'Library', href: '/sop', icon: BookOpen },
   { name: 'Team Chat', href: '/chat', icon: MessageSquare },
   { name: 'Inbox', href: '/notifications', icon: Bell },
+  { name: 'User Management', href: '/admin/users', icon: Users, adminOnly: true },
   { name: 'Ingest Data', href: '/ingest', icon: Upload, adminOnly: true },
 ];
 

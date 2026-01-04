@@ -9,7 +9,7 @@ export function Signup() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [role, setRole] = useState<'' | 'customer_service' | 'rider_manager' | 'vendor_manager'>('');
+    const [role, setRole] = useState<'' | 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager'>('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export function Signup() {
 
         setLoading(true);
 
-        const { error } = await signUp(email, password, fullName, role as 'customer_service' | 'rider_manager' | 'vendor_manager');
+        const { error } = await signUp(email, password, fullName, role as 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager');
 
         if (error) {
             setError(error.message);
@@ -209,7 +209,7 @@ export function Signup() {
                                     <select
                                         id="role"
                                         value={role}
-                                        onChange={(e) => setRole(e.target.value as '' | 'customer_service' | 'rider_manager' | 'vendor_manager')}
+                                        onChange={(e) => setRole(e.target.value as '' | 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager')}
                                         className={`w-full pl-4 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-lg focus:outline-none focus:border-slate-700 focus:bg-slate-950 transition-all font-light appearance-none cursor-pointer ${role === '' ? 'text-slate-600' : 'text-white'}`}
                                         required
                                     >
@@ -217,6 +217,7 @@ export function Signup() {
                                         <option value="customer_service">Customer Service</option>
                                         <option value="rider_manager">Rider Manager</option>
                                         <option value="vendor_manager">Vendor Account Manager</option>
+                                        <option value="business_development_manager">Business Development Manager</option>
                                     </select>
                                 </div>
                             </div>
