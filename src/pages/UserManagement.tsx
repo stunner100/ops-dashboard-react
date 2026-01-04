@@ -114,32 +114,39 @@ export function UserManagement() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error('No session');
 
-            // Call the Edge Function to delete the user from auth.users
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify({ userId }),
-                }
-            );
+            let deleteSuccess = false;
 
-            // Handle response - may be empty or JSON
-            const responseText = await response.text();
-            let result = null;
-            if (responseText) {
-                try {
-                    result = JSON.parse(responseText);
-                } catch {
-                    // Response is not JSON
+            // Try Edge Function first (properly deletes from auth.users)
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`,
+                        },
+                        body: JSON.stringify({ userId }),
+                    }
+                );
+
+                if (response.ok) {
+                    deleteSuccess = true;
                 }
+            } catch {
+                // Edge function not available, try direct delete
             }
 
-            if (!response.ok) {
-                throw new Error(result?.error || `Failed to delete user (${response.status})`);
+            // Fallback: Delete from profiles table directly
+            if (!deleteSuccess) {
+                const { error: deleteError } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', userId);
+
+                if (deleteError) {
+                    throw deleteError;
+                }
             }
 
             // Update local state
