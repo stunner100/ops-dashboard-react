@@ -333,6 +333,91 @@ function BoardView({ tasks, onDragDrop, onEdit, onDelete, onAddToColumn }: Board
   );
 }
 
+interface TaskCountdownProps {
+  task: Task;
+}
+
+function TaskCountdown({ task }: TaskCountdownProps) {
+  const [timeLeft, setTimeLeft] = useState<string>('');
+  const [isOverdue, setIsOverdue] = useState(false);
+  const [isDueSoon, setIsDueSoon] = useState(false);
+
+  useEffect(() => {
+    if (task.status === 'completed' || !task.due_date) return;
+
+    const calculateTime = () => {
+      const now = new Date().getTime();
+      const due = new Date(task.due_date!).getTime();
+      const diff = due - now;
+
+      if (diff <= 0) {
+        setIsOverdue(true);
+        setIsDueSoon(false);
+        const absDiff = Math.abs(diff);
+        const d = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((absDiff % (1000 * 60)) / 1000);
+        setTimeLeft(`Overdue by ${d > 0 ? d + 'd ' : ''}${h}h ${m}m ${s}s`);
+        return;
+      }
+
+      setIsOverdue(false);
+      setIsDueSoon(diff < 1000 * 60 * 60); // Due in less than 1 hour
+
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      if (d > 0) {
+        setTimeLeft(`${d}d ${h}h ${m}m ${s}s left`);
+      } else if (h > 0) {
+        setTimeLeft(`${h}h ${m}m ${s}s left`);
+      } else {
+        setTimeLeft(`${m}m ${s}s left`);
+      }
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
+
+    return () => clearInterval(timer);
+  }, [task.due_date, task.status]);
+
+  if (task.status === 'completed') {
+    return (
+      <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
+        <CheckCircle2 className="w-3 h-3" />
+        <span>Completed</span>
+      </div>
+    );
+  }
+
+  if (!task.due_date) {
+    if (task.start_date) {
+      return (
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+          <Calendar className="w-3 h-3" />
+          <span>Starts {new Date(task.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  return (
+    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-tight transition-all
+      ${isOverdue ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+        isDueSoon ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20 animate-pulse' :
+          'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-transparent'}
+    `}>
+      <Clock className={`w-3 h-3 ${isOverdue ? 'animate-pulse' : ''}`} />
+      <span className="font-mono">{timeLeft}</span>
+    </div>
+  );
+}
+
 interface TaskCardProps {
   task: Task;
   isDragging: boolean;
@@ -403,22 +488,7 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
         {task.title}
       </h4>
 
-      {(task.start_date || task.due_date) && (
-        <div className="flex items-center gap-1.5 mb-3 text-[10px] text-slate-500 dark:text-slate-400">
-          <Clock className="w-3 h-3" />
-          <span>
-            {task.start_date && task.due_date ? (
-              <>
-                {new Date(task.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-              </>
-            ) : task.due_date ? (
-              <>Due {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
-            ) : (
-              <>Starts {new Date(task.start_date!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
-            )}
-          </span>
-        </div>
-      )}
+      <TaskCountdown task={task} />
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
