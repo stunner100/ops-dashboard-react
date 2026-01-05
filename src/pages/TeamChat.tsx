@@ -201,7 +201,7 @@ export function TeamChat() {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Channel List - Linear style */}
         <aside className={`
-          w-full md:w-64 border-r border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#080808] flex flex-col absolute inset-0 z-20 md:relative transition-transform duration-300
+          w-full md:w-64 border-r border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#080808] flex flex-col fixed inset-0 top-[52px] z-20 md:relative md:top-0 transition-transform duration-300 ease-in-out
           ${mobileView === 'chat' ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
         `}>
           <div className="p-4 border-b border-slate-100 dark:border-white/5">
@@ -324,7 +324,7 @@ export function TeamChat() {
 
         {/* Main Chat Area - Full screen on mobile when active */}
         <div className={`
-          flex-1 flex flex-col bg-white dark:bg-[#000000] min-w-0 absolute inset-0 md:relative z-10 transition-transform duration-300
+          flex-1 flex flex-col bg-white dark:bg-[#000000] min-w-0 fixed inset-0 top-[52px] md:relative md:top-0 z-10 transition-transform duration-300 ease-in-out
           ${mobileView === 'chat' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
         `}>
           {/* Chat Header - Linear style */}
