@@ -4,7 +4,7 @@ import { TaskModal } from '../components/TaskModal';
 import { FilterPanel } from '../components/FilterPanel';
 import { useTasks, filterTasks } from '../hooks';
 import type { Task, TaskInput, TaskFilters, TaskStatus } from '../hooks';
-import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2, Repeat } from 'lucide-react';
 
 type ViewType = 'board' | 'gantt' | 'list';
 type GanttZoom = 'day' | 'week' | 'month';
@@ -411,11 +411,38 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
           </span>
         </div>
 
-        {task.assignee_name && (
-          <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-[9px] font-bold shadow-sm transition-transform group-hover:scale-105" title={task.assignee_name}>
-            {task.assignee_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-          </div>
-        )}
+        {/* Assignee(s) and recurring indicator */}
+        <div className="flex items-center gap-1.5">
+          {task.is_recurring && (
+            <div className="p-1 rounded bg-primary-100 dark:bg-primary-900/30" title="Recurring Task">
+              <Repeat className="w-3 h-3 text-primary-500" />
+            </div>
+          )}
+
+          {/* Multiple assignees display */}
+          {(task.assignee_names && task.assignee_names.length > 0) ? (
+            <div className="flex -space-x-1.5">
+              {task.assignee_names.slice(0, 3).map((name, idx) => (
+                <div
+                  key={idx}
+                  className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 border border-white dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-[9px] font-bold shadow-sm"
+                  title={name}
+                >
+                  {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+              ))}
+              {task.assignee_names.length > 3 && (
+                <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 border border-white dark:border-slate-800 flex items-center justify-center text-slate-500 text-[8px] font-bold">
+                  +{task.assignee_names.length - 3}
+                </div>
+              )}
+            </div>
+          ) : task.assignee_name && (
+            <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-[9px] font-bold shadow-sm transition-transform group-hover:scale-105" title={task.assignee_name}>
+              {task.assignee_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

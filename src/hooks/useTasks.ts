@@ -17,6 +17,13 @@ export interface Task {
     due_date?: string | null;
     assignee_id?: string | null;
     assignee_name?: string | null;
+    assignee_ids?: string[];
+    assignee_names?: string[];
+    is_recurring?: boolean;
+    recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly' | null;
+    recurrence_interval?: number;
+    recurrence_end_date?: string | null;
+    parent_task_id?: string | null;
     created_by?: string | null;
     created_at: string;
     updated_at: string;
@@ -32,6 +39,12 @@ export interface TaskInput {
     due_date?: string;
     assignee_id?: string;
     assignee_name?: string;
+    assignee_ids?: string[];
+    assignee_names?: string[];
+    is_recurring?: boolean;
+    recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    recurrence_interval?: number;
+    recurrence_end_date?: string;
 }
 
 export interface TaskFilters {
