@@ -34,23 +34,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session with timeout for faster initial load
+    // Get initial session with timeout - only for initial page load without a session
     const initTimeout = setTimeout(() => {
-      // If auth check takes too long, show the app anyway
-      if (loading) {
-        console.warn('Auth initialization timed out, proceeding without session');
+      // If auth check takes too long and we have no user yet, proceed to login
+      if (loading && !user) {
+        console.warn('Auth initialization timed out, redirecting to login');
         setLoading(false);
       }
-    }, 2000); // 2 second timeout - faster UX, will redirect to login if no session
+    }, 5000); // 5 second timeout for initial load
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       clearTimeout(initTimeout);
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Fetch profile with timeout
+        // Fetch profile - loading will be set to false in fetchProfile
         fetchProfileWithTimeout(session.user.id);
       } else {
+        // No session, done loading
         setLoading(false);
       }
     }).catch((err) => {
