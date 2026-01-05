@@ -21,6 +21,8 @@ const categories: { value: TaskCategory; label: string }[] = [
     { value: 'vendor_ops', label: 'Vendor Ops' },
     { value: 'rider_fleet', label: 'Rider Fleet' },
     { value: 'customer_service', label: 'Customer Service' },
+    { value: 'business_development', label: 'Business Development' },
+    { value: 'dashboard_support', label: 'Dashboard Support' },
 ];
 
 const statuses: { value: TaskStatus; label: string; color: string }[] = [

@@ -34,6 +34,8 @@ const categoryLabels: Record<string, string> = {
   'vendor_ops': 'Vendor Ops',
   'rider_fleet': 'Rider Fleet',
   'customer_service': 'Customer Service',
+  'business_development': 'Business Development',
+  'dashboard_support': 'Dashboard Support',
 };
 
 export function OverviewBoard() {

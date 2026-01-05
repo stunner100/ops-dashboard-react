@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-export type TaskCategory = 'vendor_ops' | 'rider_fleet' | 'customer_service';
+export type TaskCategory = 'vendor_ops' | 'rider_fleet' | 'customer_service' | 'business_development' | 'dashboard_support';
 export type TaskStatus = 'pending' | 'in-progress' | 'urgent' | 'completed';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
 
