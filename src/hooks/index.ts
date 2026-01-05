@@ -12,3 +12,6 @@ export type { KPI, KPICategory, KPIsByCategory } from './useKPIs';
 
 export { useInbox } from './useInbox';
 export type { Notification, NotificationType, NotificationPriority } from './useInbox';
+
+export { useBoards } from './useBoards';
+export type { Board, BoardInput } from './useBoards';

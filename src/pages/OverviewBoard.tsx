@@ -2,9 +2,10 @@ import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import { Header } from '../components/layout';
 import { TaskModal } from '../components/TaskModal';
 import { FilterPanel } from '../components/FilterPanel';
-import { useTasks, filterTasks } from '../hooks';
-import type { Task, TaskInput, TaskFilters, TaskStatus } from '../hooks';
-import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2, Repeat } from 'lucide-react';
+import { BoardModal } from '../components/BoardModal';
+import { useTasks, filterTasks, useBoards } from '../hooks';
+import type { Task, TaskInput, TaskFilters, TaskStatus, Board } from '../hooks';
+import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2, Repeat, ChevronDown, Folder, Star, Briefcase, Target, Zap, Heart, Bookmark, Flag, Archive, LayoutGrid } from 'lucide-react';
 
 type ViewType = 'board' | 'gantt' | 'list';
 type GanttZoom = 'day' | 'week' | 'month';
@@ -44,14 +45,61 @@ export function OverviewBoard() {
   const [filters, setFilters] = useState<TaskFilters>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<Board | null>(null);
+  const [showBoardDropdown, setShowBoardDropdown] = useState(false);
 
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus } = useTasks();
+  const { boards, createBoard, updateBoard, deleteBoard } = useBoards();
 
   // Apply filters
   const filteredTasks = filterTasks(tasks, filters);
 
+  // Filter tasks by selected board
+  const boardFilteredTasks = selectedBoardId
+    ? filteredTasks.filter(task => task.board_id === selectedBoardId)
+    : filteredTasks;
+
+  // Get selected board details
+  const selectedBoard = boards.find(b => b.id === selectedBoardId);
+
+  // Board icon mapping
+  const getBoardIcon = (iconName: string) => {
+    const icons: Record<string, typeof Folder> = {
+      folder: Folder, star: Star, briefcase: Briefcase, target: Target,
+      zap: Zap, heart: Heart, bookmark: Bookmark, flag: Flag, archive: Archive,
+    };
+    return icons[iconName] || Folder;
+  };
+
+  // Board handlers
+  const handleCreateBoard = async (data: { name: string; description?: string; color?: string; icon?: string }) => {
+    const result = await createBoard(data);
+    if (result.success && result.data) {
+      setSelectedBoardId(result.data.id);
+    }
+    return result;
+  };
+
+  const handleUpdateBoard = async (data: { name: string; description?: string; color?: string; icon?: string }) => {
+    if (!editingBoard) return { success: false, error: 'No board selected' };
+    return updateBoard(editingBoard.id, data);
+  };
+
+  const handleDeleteBoard = async (board: Board) => {
+    if (confirm(`Delete board "${board.name}"? Tasks will not be deleted.`)) {
+      await deleteBoard(board.id);
+      if (selectedBoardId === board.id) {
+        setSelectedBoardId(null);
+      }
+    }
+  };
+
   const handleCreateTask = async (data: TaskInput) => {
-    return createTask(data);
+    // If a board is selected, automatically assign new task to that board
+    const taskData = selectedBoardId ? { ...data, board_id: selectedBoardId } : data;
+    return createTask(taskData);
   };
 
   const handleUpdateTask = async (data: TaskInput) => {
@@ -163,13 +211,101 @@ export function OverviewBoard() {
 
           {/* Main Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button className="btn-primary flex-1 md:flex-none justify-center" onClick={handleOpenCreateModal}>
                 <Plus strokeWidth={1.5} className="w-4 h-4" />
                 New Task
               </button>
               <div className="flex-1 md:flex-none">
                 <FilterPanel filters={filters} onChange={setFilters} />
+              </div>
+
+              {/* Board Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowBoardDropdown(!showBoardDropdown)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border ${selectedBoardId
+                    ? 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white'
+                    : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                    }`}
+                >
+                  {selectedBoard ? (
+                    <>
+                      {React.createElement(getBoardIcon(selectedBoard.icon), {
+                        className: 'w-4 h-4',
+                        style: { color: selectedBoard.color }
+                      })}
+                      <span className="max-w-[120px] truncate">{selectedBoard.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <LayoutGrid className="w-4 h-4" />
+                      <span>All Tasks</span>
+                    </>
+                  )}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showBoardDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showBoardDropdown && (
+                  <div className="absolute left-0 top-full mt-2 bg-white dark:bg-[#0A0A0A] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-30 min-w-[200px] py-2 animate-slide-up">
+                    <button
+                      onClick={() => {
+                        setSelectedBoardId(null);
+                        setShowBoardDropdown(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 ${!selectedBoardId ? 'text-primary-500 font-semibold' : 'text-slate-700 dark:text-slate-300'
+                        }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      All Tasks
+                    </button>
+
+                    {boards.length > 0 && (
+                      <div className="border-t border-slate-100 dark:border-white/5 my-1" />
+                    )}
+
+                    {boards.map((board) => {
+                      const BoardIcon = getBoardIcon(board.icon);
+                      return (
+                        <button
+                          key={board.id}
+                          onClick={() => {
+                            setSelectedBoardId(board.id);
+                            setShowBoardDropdown(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 group ${selectedBoardId === board.id ? 'text-primary-500 font-semibold' : 'text-slate-700 dark:text-slate-300'
+                            }`}
+                        >
+                          <BoardIcon className="w-4 h-4" style={{ color: board.color }} />
+                          <span className="flex-1 truncate">{board.name}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteBoard(board);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </button>
+                      );
+                    })}
+
+                    <div className="border-t border-slate-100 dark:border-white/5 my-1" />
+
+                    <button
+                      onClick={() => {
+                        setShowBoardDropdown(false);
+                        setEditingBoard(null);
+                        setIsBoardModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create Board
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -195,7 +331,7 @@ export function OverviewBoard() {
         {/* Views */}
         {currentView === 'board' && (
           <BoardView
-            tasks={filteredTasks}
+            tasks={boardFilteredTasks}
             onDragDrop={handleDragDrop}
             onEdit={handleEditTask}
             onDelete={handleDeleteTask}
@@ -207,7 +343,7 @@ export function OverviewBoard() {
         )}
         {currentView === 'gantt' && (
           <GanttView
-            tasks={filteredTasks}
+            tasks={boardFilteredTasks}
             zoom={ganttZoom}
             onEdit={handleEditTask}
             onUpdateTask={updateTask}
@@ -215,7 +351,7 @@ export function OverviewBoard() {
         )}
         {currentView === 'list' && (
           <ListView
-            tasks={filteredTasks}
+            tasks={boardFilteredTasks}
             onEdit={handleEditTask}
             onDelete={handleDeleteTask}
           />
@@ -229,6 +365,17 @@ export function OverviewBoard() {
         onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
         task={editingTask}
         mode={editingTask ? 'edit' : 'create'}
+      />
+
+      {/* Board Modal */}
+      <BoardModal
+        isOpen={isBoardModalOpen}
+        onClose={() => {
+          setIsBoardModalOpen(false);
+          setEditingBoard(null);
+        }}
+        onSubmit={editingBoard ? handleUpdateBoard : handleCreateBoard}
+        editingBoard={editingBoard}
       />
     </div>
   );

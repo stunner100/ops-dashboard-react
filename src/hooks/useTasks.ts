@@ -24,6 +24,7 @@ export interface Task {
     recurrence_interval?: number;
     recurrence_end_date?: string | null;
     parent_task_id?: string | null;
+    board_id?: string | null;
     created_by?: string | null;
     created_at: string;
     updated_at: string;
@@ -45,6 +46,7 @@ export interface TaskInput {
     recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
     recurrence_interval?: number;
     recurrence_end_date?: string;
+    board_id?: string;
 }
 
 export interface TaskFilters {
