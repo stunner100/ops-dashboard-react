@@ -9,7 +9,7 @@ export function Signup() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [role, setRole] = useState<'' | 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support'>('');
+    const [role, setRole] = useState<'' | 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands'>('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export function Signup() {
 
         setLoading(true);
 
-        const { error } = await signUp(email, password, fullName, role as 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support');
+        const { error } = await signUp(email, password, fullName, role as 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands');
 
         if (error) {
             setError(error.message);
@@ -204,6 +204,7 @@ export function Signup() {
                                         <option value="vendor_manager" className="bg-[#080808]">Vendor Account Manager</option>
                                         <option value="business_development_manager" className="bg-[#080808]">Business Development Manager</option>
                                         <option value="dashboard_support" className="bg-[#080808]">Dashboard Support</option>
+                                        <option value="marketing_brands" className="bg-[#080808]">Marketing & Brands</option>
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -6,7 +6,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'admin';
+  role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands' | 'admin';
   is_approved: boolean;
   created_at: string;
 }
@@ -20,7 +20,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support') => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands') => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support') => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands') => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
