@@ -437,7 +437,8 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
       draggable
       onDragStart={(e) => onDragStart(e, task.id)}
       onDragEnd={onDragEnd}
-      className={`bg-white dark:bg-[#111111] rounded-lg p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200/60 dark:border-white/5 hover:border-primary-500/50 dark:hover:border-primary-500/30 transition-all cursor-grab active:cursor-grabbing group ${isDragging ? 'opacity-40 grayscale scale-[0.98]' : ''
+      onClick={() => onEdit(task)}
+      className={`bg-white dark:bg-[#111111] rounded-lg p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200/60 dark:border-white/5 hover:border-primary-500/50 dark:hover:border-primary-500/30 transition-all cursor-pointer group ${isDragging ? 'opacity-40 grayscale scale-[0.98]' : ''
         }`}
     >
       <div className="flex items-start justify-between mb-2">
@@ -449,7 +450,10 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
         </div>
         <div className="relative">
           <button
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
             className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           >
             <MoreHorizontal strokeWidth={1.5} className="w-3.5 h-3.5" />
@@ -457,7 +461,8 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 bg-white dark:bg-black border border-slate-200/60 dark:border-white/10 rounded-md shadow-xl z-20 py-1 min-w-[120px] animate-slide-up origin-top-right">
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowMenu(false);
                   onEdit(task);
                 }}
@@ -467,7 +472,8 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
                 Edit
               </button>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowMenu(false);
                   onDelete(task);
                 }}
@@ -482,8 +488,7 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
       </div>
 
       <h4
-        onClick={() => onEdit(task)}
-        className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] mb-1 line-clamp-2 leading-relaxed cursor-pointer group-hover:text-primary-500 transition-colors"
+        className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] mb-1 line-clamp-2 leading-relaxed group-hover:text-primary-500 transition-colors"
       >
         {task.title}
       </h4>
