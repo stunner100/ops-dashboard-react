@@ -398,10 +398,27 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
 
       <h4
         onClick={() => onEdit(task)}
-        className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] mb-3 line-clamp-2 leading-relaxed cursor-pointer group-hover:text-primary-500 transition-colors"
+        className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] mb-1 line-clamp-2 leading-relaxed cursor-pointer group-hover:text-primary-500 transition-colors"
       >
         {task.title}
       </h4>
+
+      {(task.start_date || task.due_date) && (
+        <div className="flex items-center gap-1.5 mb-3 text-[10px] text-slate-500 dark:text-slate-400">
+          <Clock className="w-3 h-3" />
+          <span>
+            {task.start_date && task.due_date ? (
+              <>
+                {new Date(task.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </>
+            ) : task.due_date ? (
+              <>Due {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
+            ) : (
+              <>Starts {new Date(task.start_date!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
+            )}
+          </span>
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
