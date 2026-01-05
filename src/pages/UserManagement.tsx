@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Users, Check, X, Search, Filter, Loader2, Shield, Clock, UserCheck, Trash2 } from 'lucide-react';
+import { Users, Check, X, Search, Loader2, Shield, Clock, UserCheck, Trash2 } from 'lucide-react';
 
 interface UserProfile {
     id: string;
@@ -198,7 +198,7 @@ export function UserManagement() {
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                    <Shield className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                    <Shield strokeWidth={1.5} className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">Access Denied</h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-2">You don't have permission to access this page.</p>
                 </div>
@@ -207,84 +207,85 @@ export function UserManagement() {
     }
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 md:p-8 max-w-[1400px] mx-auto animate-fade-in space-y-10">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                    <Users className="w-7 h-7" />
-                    User Management
+            <div>
+                <h1 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-1">
+                    Administration
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-1">
-                    Manage user access and approvals
-                </p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                    User Management
+                </h2>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white dark:bg-[#080808] rounded-xl p-5 border border-slate-200/60 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center">
+                            <Users strokeWidth={1.5} className="w-5 h-5 text-slate-900 dark:text-white" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{users.length}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Total Users</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{users.length}</p>
+                            <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Users</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="bg-white dark:bg-[#080808] rounded-xl p-5 border border-slate-200/60 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-400/5 border border-amber-100 dark:border-amber-400/10 flex items-center justify-center">
+                            <Clock strokeWidth={1.5} className="w-5 h-5 text-amber-500" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{pendingCount}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Pending Approval</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{pendingCount}</p>
+                            <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pending Approval</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                            <UserCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="bg-white dark:bg-[#080808] rounded-xl p-5 border border-slate-200/60 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-400/5 border border-green-100 dark:border-green-400/10 flex items-center justify-center">
+                            <UserCheck strokeWidth={1.5} className="w-5 h-5 text-green-500" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{approvedCount}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Approved Users</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{approvedCount}</p>
+                            <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Approved Users</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    {/* Search */}
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                <div className="flex gap-1 p-1 bg-slate-100/50 dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/5">
+                    {(['all', 'pending', 'approved'] as FilterStatus[]).map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => setFilterStatus(status)}
+                            className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-all duration-200 capitalize ${filterStatus === status
+                                ? 'bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/10'
+                                : 'text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                                }`}
+                        >
+                            {status}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex gap-3 items-center w-full md:w-auto">
+                    <div className="relative flex-1 md:w-72 group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search strokeWidth={1.5} className="h-4 w-4 text-slate-400 dark:text-slate-600 group-focus-within:text-primary-500 transition-colors" />
+                        </div>
                         <input
                             type="text"
-                            placeholder="Search by name or email..."
+                            placeholder="Search users..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="block w-full pl-9 pr-4 py-2 bg-slate-100/50 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium"
                         />
-                    </div>
-
-                    {/* Status Filter */}
-                    <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-slate-400" />
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                            className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        >
-                            <option value="all">All Users</option>
-                            <option value="pending">Pending Approval</option>
-                            <option value="approved">Approved</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -297,103 +298,114 @@ export function UserManagement() {
             )}
 
             {/* Users Table */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-[#000000] rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden shadow-sm">
                 {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                    <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+                        <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary-500" />
+                        <p className="text-[13px] font-bold uppercase tracking-widest">Updating roster...</p>
                     </div>
                 ) : filteredUsers.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-500 dark:text-slate-400">No users found</p>
+                    <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-slate-100 dark:border-white/5">
+                            <Users strokeWidth={1.5} className="w-8 h-8 text-slate-200 dark:text-slate-700" />
+                        </div>
+                        <h3 className="text-[15px] font-bold text-slate-900 dark:text-white mb-2">No users found</h3>
+                        <p className="text-[13px] font-medium text-slate-400 dark:text-slate-500 max-w-[280px] text-center leading-relaxed">
+                            {searchQuery ? `No matches found for "${searchQuery}".` : 'The roster is currently empty.'}
+                        </p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                            <thead className="bg-slate-100/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
                                 <tr>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</th>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Signed Up</th>
-                                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                                    <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">User</th>
+                                    <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Role</th>
+                                    <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Status</th>
+                                    <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Registered</th>
+                                    <th className="text-right px-6 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Management</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                                 {filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                                    <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4">
-                                            <div>
-                                                <p className="font-medium text-slate-900 dark:text-white">
-                                                    {user.full_name || 'No name'}
-                                                </p>
-                                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                                    {user.email}
-                                                </p>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-[12px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 uppercase tracking-tighter shadow-sm">
+                                                    {user.full_name?.charAt(0) || user.email.charAt(0)}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[14px] font-bold text-slate-900 dark:text-white leading-tight">
+                                                        {user.full_name || 'Anonymous User'}
+                                                    </p>
+                                                    <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500 truncate">
+                                                        {user.email}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin'
-                                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-                                                : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${user.role === 'admin'
+                                                ? 'bg-purple-50 dark:bg-purple-400/10 border-purple-100 dark:border-purple-400/20 text-purple-600 dark:text-purple-400'
+                                                : 'bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400'
                                                 }`}>
                                                 {formatRole(user.role)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             {user.is_approved ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                                    <Check className="w-3 h-3" />
-                                                    Approved
+                                                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight">
+                                                    <Check strokeWidth={1.5} className="w-3.5 h-3.5" />
+                                                    Active
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                                                    <Clock className="w-3 h-3" />
+                                                <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-500 uppercase tracking-tight">
+                                                    <Clock strokeWidth={1.5} className="w-3.5 h-3.5" />
                                                     Pending
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                                        <td className="px-6 py-4 text-[13px] font-medium text-slate-400 dark:text-slate-500">
                                             {formatDate(user.created_at)}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-end gap-1.5">
                                                 {user.role !== 'admin' && (
                                                     <>
                                                         {user.is_approved ? (
                                                             <button
                                                                 onClick={() => revokeApproval(user.id)}
                                                                 disabled={actionLoading === user.id}
-                                                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                                                className="p-1.5 rounded-md text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-400/10 transition-all md:opacity-0 md:group-hover:opacity-100"
+                                                                title="Revoke Access"
                                                             >
                                                                 {actionLoading === user.id ? (
                                                                     <Loader2 className="w-4 h-4 animate-spin" />
                                                                 ) : (
                                                                     <X className="w-4 h-4" />
                                                                 )}
-                                                                Revoke
                                                             </button>
                                                         ) : (
                                                             <button
                                                                 onClick={() => approveUser(user.id)}
                                                                 disabled={actionLoading === user.id}
-                                                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                                                className="p-1.5 rounded-md text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-400/10 transition-all md:opacity-0 md:group-hover:opacity-100"
+                                                                title="Approve User"
                                                             >
                                                                 {actionLoading === user.id ? (
                                                                     <Loader2 className="w-4 h-4 animate-spin" />
                                                                 ) : (
-                                                                    <Check className="w-4 h-4" />
+                                                                    <Check strokeWidth={1.5} className="w-4 h-4" />
                                                                 )}
-                                                                Approve
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={() => setDeleteConfirm(user)}
                                                             disabled={actionLoading === user.id}
-                                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                                            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-400/10 transition-all md:opacity-0 md:group-hover:opacity-100"
+                                                            title="Remove User"
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            Remove
+                                                            <Trash2 strokeWidth={1.5} className="w-4 h-4" />
                                                         </button>
                                                     </>
                                                 )}
@@ -409,36 +421,39 @@ export function UserManagement() {
 
             {/* Delete Confirmation Modal */}
             {deleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
-                        <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
-                            <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white text-center mb-2">
-                            Remove User
-                        </h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-center mb-6">
-                            Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{deleteConfirm.full_name || deleteConfirm.email}</strong>? This action cannot be undone.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteConfirm(null)}
-                                className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => deleteUser(deleteConfirm.id)}
-                                disabled={actionLoading === deleteConfirm.id}
-                                className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {actionLoading === deleteConfirm.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                )}
-                                Remove
-                            </button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
+                    <div className="relative w-full max-w-md bg-white dark:bg-[#111111] rounded-xl shadow-2xl border border-slate-200/60 dark:border-white/10 overflow-hidden animate-slide-up">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-400/5 border border-red-100 dark:border-red-400/10 flex items-center justify-center mx-auto mb-5">
+                                <Trash2 strokeWidth={1.5} className="w-6 h-6 text-red-500" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                                Terminate Access
+                            </h3>
+                            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
+                                You are about to remove <strong className="text-slate-900 dark:text-white">{deleteConfirm.full_name || deleteConfirm.email}</strong> from the system. This action is irreversible.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDeleteConfirm(null)}
+                                    className="flex-1 px-4 py-2.5 text-[13px] font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => deleteUser(deleteConfirm.id)}
+                                    disabled={actionLoading === deleteConfirm.id}
+                                    className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-[13px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
+                                >
+                                    {actionLoading === deleteConfirm.id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Trash2 strokeWidth={1.5} className="w-4 h-4" />
+                                    )}
+                                    Terminate
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

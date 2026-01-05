@@ -87,6 +87,22 @@ export function useTasks() {
 
             // Optimistically update local state
             setTasks((prev) => [data, ...prev]);
+
+            // Create notification for assignee if assigned
+            if (input.assignee_id && input.assignee_id !== user?.id) {
+                await supabase
+                    .from('notifications')
+                    .insert({
+                        user_id: input.assignee_id,
+                        type: 'update',
+                        title: 'You have been assigned a task',
+                        description: `Task: ${input.title}`,
+                        priority: input.priority || 'medium',
+                        link: `/?task=${data.id}`,
+                        read: false,
+                    });
+            }
+
             return { success: true };
         } catch (err) {
             console.error('Error creating task:', err);
@@ -94,9 +110,13 @@ export function useTasks() {
         }
     };
 
+
     // Update an existing task
     const updateTask = async (id: string, updates: Partial<TaskInput>): Promise<{ success: boolean; error?: string }> => {
         try {
+            // Get current task to check if assignee changed
+            const currentTask = tasks.find(t => t.id === id);
+
             const { data, error: updateError } = await supabase
                 .from('tasks')
                 .update(updates)
@@ -108,12 +128,31 @@ export function useTasks() {
 
             // Update local state
             setTasks((prev) => prev.map((t) => (t.id === id ? data : t)));
+
+            // Create notification if assignee changed
+            if (updates.assignee_id &&
+                updates.assignee_id !== currentTask?.assignee_id &&
+                updates.assignee_id !== user?.id) {
+                await supabase
+                    .from('notifications')
+                    .insert({
+                        user_id: updates.assignee_id,
+                        type: 'update',
+                        title: 'You have been assigned a task',
+                        description: `Task: ${data.title}`,
+                        priority: data.priority || 'medium',
+                        link: `/?task=${data.id}`,
+                        read: false,
+                    });
+            }
+
             return { success: true };
         } catch (err) {
             console.error('Error updating task:', err);
             return { success: false, error: 'Failed to update task' };
         }
     };
+
 
     // Delete a task
     const deleteTask = async (id: string): Promise<{ success: boolean; error?: string }> => {

@@ -60,24 +60,24 @@ export function KPIBoard() {
           className="ml-4 p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           title="Refresh KPIs"
         >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw strokeWidth={1.5} className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
       </Header>
 
-      <div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-fade-in">
+      <div className="p-6 md:p-8 space-y-10 max-w-[1400px] mx-auto animate-fade-in">
         {/* Overview KPIs - Large Cards */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Overview Metrics</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Overview Metrics</h2>
             <button
               onClick={() => handleOpenCreate('overview')}
-              className="btn-secondary text-xs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200/50 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-md text-[12px] font-bold transition-all border border-transparent hover:border-slate-200 dark:hover:border-white/10 group"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
               Add KPI
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {kpisByCategory.overview.map((kpi) => (
               <OverviewKPICard key={kpi.id} kpi={kpi} onUpdate={updateKPI} onDelete={deleteKPI} />
             ))}
@@ -85,32 +85,35 @@ export function KPIBoard() {
         </div>
 
         {/* Role-specific KPIs */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {(['vendor_ops', 'rider_fleet', 'customer_service'] as const).map((category) => (
             <div
               key={category}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col"
+              className="bg-white dark:bg-[#000000] rounded-xl border border-slate-200/60 dark:border-white/5 shadow-sm overflow-hidden flex flex-col group/category transition-all hover:border-slate-300 dark:hover:border-white/10"
             >
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-sm flex items-center justify-between">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <span className="w-1.5 h-4 bg-primary-500 rounded-full"></span>
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                <h3 className="text-[13px] font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-1 h-3.5 bg-primary-500 rounded-full" />
                   {categoryLabels[category]}
                 </h3>
                 <button
                   onClick={() => handleOpenCreate(category)}
-                  className="text-slate-400 hover:text-primary-500 transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-md transition-all opacity-0 group-hover/category:opacity-100"
                   title="Add KPI"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus strokeWidth={1.5} className="w-4 h-4" />
                 </button>
               </div>
-              <div className="p-2 flex-1">
+              <div className="p-1 flex-1">
                 {kpisByCategory[category].map((kpi) => (
                   <RoleKPIRow key={kpi.id} kpi={kpi} onUpdate={updateKPI} onDelete={deleteKPI} />
                 ))}
                 {kpisByCategory[category].length === 0 && (
-                  <div className="text-center py-8 text-sm text-slate-400">
-                    No KPIs yet. Click + to add one.
+                  <div className="text-center py-10 px-4">
+                    <AlertCircle strokeWidth={1.5} className="w-8 h-8 text-slate-100 dark:text-white/5 mx-auto mb-3" />
+                    <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500">
+                      No KPIs yet. Click + to add one.
+                    </p>
                   </div>
                 )}
               </div>
@@ -165,75 +168,82 @@ function CreateKPIModal({ category, onClose, onCreate }: CreateKPIModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-slide-up">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Add KPI to {categoryLabels[category]}
-          </h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-            <X className="w-5 h-5" />
+      <div className="relative w-full max-w-md bg-white dark:bg-[#111111] rounded-xl shadow-2xl border border-slate-200/60 dark:border-white/10 overflow-hidden animate-slide-up">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/5">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              New KPI
+            </h2>
+            <p className="text-[12px] font-medium text-slate-500 mt-0.5">Add a new metric to {categoryLabels[category]}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+            <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <AlertCircle strokeWidth={1.5} className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              KPI Name <span className="text-red-500">*</span>
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
+              KPI Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Response Rate"
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="e.g. Response Rate"
+              className="w-full px-4 py-2 bg-slate-100/50 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Value <span className="text-red-500">*</span>
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
+              Value
             </label>
             <input
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="e.g., 95% or 120"
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="e.g. 95% or 120"
+              className="w-full px-4 py-2 bg-slate-100/50 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium"
             />
           </div>
 
           {category === 'overview' && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Icon (optional)
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
+                Icon
               </label>
               <select
                 value={icon}
                 onChange={(e) => setIcon(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 bg-slate-100/50 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium appearance-none cursor-pointer"
               >
                 <option value="">Select icon...</option>
-                <option value="Package">Package</option>
-                <option value="Users">Users</option>
-                <option value="Clock">Clock</option>
-                <option value="Star">Star</option>
+                <option value="Package">📦 Package</option>
+                <option value="Users">👥 Users</option>
+                <option value="Clock">🕒 Clock</option>
+                <option value="Star">⭐ Star</option>
               </select>
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary disabled:opacity-50">
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <button
+              type="submit"
+              disabled={loading || !name.trim() || !value.trim()}
+              className="px-5 py-2 text-sm font-bold bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-lg shadow-sm transition-all flex items-center gap-2"
+            >
+              {loading ? <Loader2 strokeWidth={1.5} className="w-4 h-4 animate-spin" /> : <Plus strokeWidth={1.5} className="w-4 h-4" />}
               {loading ? 'Creating...' : 'Create KPI'}
             </button>
           </div>
@@ -253,7 +263,6 @@ function OverviewKPICard({ kpi, onUpdate, onDelete }: OverviewKPICardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(kpi.value);
   const [saving, setSaving] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
 
   const Icon = kpi.icon ? iconMap[kpi.icon] || Package : Package;
   const { change, trend } = calculateChange(kpi.value, kpi.previous_value);
@@ -277,10 +286,9 @@ function OverviewKPICard({ kpi, onUpdate, onDelete }: OverviewKPICardProps) {
   };
 
   const handleDelete = async () => {
-    if (confirm(`Delete "${kpi.name}"?`)) {
+    if (window.confirm(`Delete "${kpi.name}"?`)) {
       await onDelete(kpi.id);
     }
-    setShowMenu(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -289,76 +297,72 @@ function OverviewKPICard({ kpi, onUpdate, onDelete }: OverviewKPICardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200 group relative">
+    <div className="bg-white dark:bg-[#080808] rounded-xl p-5 border border-slate-200/60 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
       {/* Menu */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-2.5 right-2.5 z-10">
         <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="p-1.5 rounded text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+          onClick={handleDelete}
+          className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all"
+          title="Delete KPI"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 strokeWidth={1.5} className="w-3.5 h-3.5" />
         </button>
-        {showMenu && (
-          <div className="absolute right-0 top-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-10 py-1 min-w-[100px]">
-            <button
-              onClick={handleDelete}
-              className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete
-            </button>
-          </div>
-        )}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-          <Icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+      <div className="flex items-center justify-between mb-5">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center group-hover:border-primary-500/30 transition-all duration-300">
+          <Icon strokeWidth={1.5} className="w-5 h-5 text-slate-900 dark:text-white group-hover:text-primary-500 transition-colors" />
         </div>
         {change && (
-          <div className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${trend === 'up'
-              ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800'
-              : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-800'
-            }`}>
-            {trend === 'up' ? (
-              <TrendingUp className="w-3.5 h-3.5" />
-            ) : (
-              <TrendingDown className="w-3.5 h-3.5" />
-            )}
-            {change}
+          <div className="flex flex-col items-end">
+            <div className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md border ${trend === 'up'
+              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-400/10 border-emerald-100 dark:border-emerald-400/20'
+              : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-400/10 border-rose-100 dark:border-rose-400/20'
+              }`}>
+              {trend === 'up' ? (
+                <TrendingUp strokeWidth={1.5} className="w-3 h-3" />
+              ) : (
+                <TrendingDown strokeWidth={1.5} className="w-3 h-3" />
+              )}
+              {change}
+            </div>
           </div>
         )}
       </div>
 
-      {isEditing ? (
-        <div className="mb-1">
-          <input
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            className="w-full text-3xl font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-900 border border-primary-300 dark:border-primary-600 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <div className="flex items-center gap-2 mt-2">
-            <button onClick={handleSave} disabled={saving} className="p-1.5 rounded bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            </button>
-            <button onClick={handleCancel} className="p-1.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600">
-              <X className="w-4 h-4" />
-            </button>
+      <div className="relative">
+        {isEditing ? (
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="w-full text-2xl font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-black border border-primary-500/50 rounded-lg px-2 py-1 focus:outline-none transition-all"
+            />
+            <div className="flex items-center gap-1.5">
+              <button onClick={handleSave} disabled={saving} className="p-1 rounded bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50">
+                {saving ? <Loader2 strokeWidth={1.5} className="w-3.5 h-3.5 animate-spin" /> : <Check strokeWidth={1.5} className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={handleCancel} className="p-1 rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div onClick={() => setIsEditing(true)} className="cursor-pointer group/value">
-          <div className="flex items-center gap-2">
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{kpi.value}</h3>
-            <Pencil className="w-4 h-4 text-slate-400 opacity-0 group-hover/value:opacity-100 transition-opacity" />
+        ) : (
+          <div onClick={() => setIsEditing(true)} className="cursor-pointer group/value inline-block">
+            <div className="flex items-baseline gap-1.5">
+              <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-primary-500 transition-colors">{kpi.value}</h3>
+              <Pencil strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 opacity-0 group-hover/value:opacity-100 transition-opacity" />
+            </div>
           </div>
-        </div>
-      )}
-
-      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">{kpi.name}</p>
+        )}
+        <p className="text-[13px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">{kpi.name}</p>
+      </div>
     </div>
   );
 }
@@ -404,45 +408,53 @@ function RoleKPIRow({ kpi, onUpdate, onDelete }: RoleKPIRowProps) {
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 rounded-lg transition-colors group">
-      <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors flex-1">
-        {kpi.name}
-      </span>
+    <div className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.03] rounded-lg transition-all group">
+      <div className="flex flex-col min-w-0">
+        <span className="text-[13px] font-bold text-slate-500 dark:text-[#999999] group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate uppercase tracking-tight">
+          {kpi.name}
+        </span>
+      </div>
 
-      {isEditing ? (
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            className="w-24 text-sm font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-900 border border-primary-300 dark:border-primary-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 text-right"
-          />
-          <button onClick={handleSave} disabled={saving} className="p-1 rounded bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-          </button>
-          <button onClick={handleCancel} className="p-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600">
-            <X className="w-3 h-3" />
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <span
-            onClick={() => setIsEditing(true)}
-            className="text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-tight cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 flex items-center gap-1 group/value"
-          >
-            {kpi.value}
-            <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover/value:opacity-100 transition-opacity" />
-          </span>
-          <button
-            onClick={handleDelete}
-            className="p-1 rounded text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      )}
+      <div className="flex items-center gap-3">
+        {isEditing ? (
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="w-20 text-[13px] font-bold text-slate-900 dark:text-white bg-white dark:bg-black border border-primary-500/50 rounded px-2 py-1 focus:outline-none text-right"
+            />
+            <button onClick={handleSave} disabled={saving} className="p-1 rounded bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50">
+              {saving ? <Loader2 strokeWidth={1.5} className="w-3 h-3 animate-spin" /> : <Check strokeWidth={1.5} className="w-3 h-3" />}
+            </button>
+            <button onClick={handleCancel} className="p-1 rounded bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div
+              onClick={() => setIsEditing(true)}
+              className="flex flex-col items-end cursor-pointer group/value"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[14px] font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                  {kpi.value}
+                </span>
+                <Pencil strokeWidth={1.5} className="w-3 h-3 text-slate-400 opacity-0 group-hover/value:opacity-100 transition-opacity" />
+              </div>
+            </div>
+            <button
+              onClick={handleDelete}
+              className="p-1 px-2 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
+            >
+              <Trash2 strokeWidth={1.5} className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

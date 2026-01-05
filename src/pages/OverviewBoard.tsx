@@ -10,10 +10,10 @@ type ViewType = 'board' | 'gantt' | 'list';
 type GanttZoom = 'day' | 'week' | 'month';
 
 const columns = [
-  { id: 'pending' as TaskStatus, title: 'Pending', color: 'bg-slate-400' },
-  { id: 'in-progress' as TaskStatus, title: 'In Progress', color: 'bg-primary-500' },
-  { id: 'urgent' as TaskStatus, title: 'Urgent', color: 'bg-red-500' },
-  { id: 'completed' as TaskStatus, title: 'Completed', color: 'bg-emerald-500' },
+  { id: 'pending' as TaskStatus, title: 'Backlog', color: 'text-slate-400' },
+  { id: 'in-progress' as TaskStatus, title: 'In Progress', color: 'text-primary-500' },
+  { id: 'urgent' as TaskStatus, title: 'Urgent', color: 'text-red-500' },
+  { id: 'completed' as TaskStatus, title: 'Done', color: 'text-emerald-500' },
 ];
 
 const statusIcons = {
@@ -24,10 +24,10 @@ const statusIcons = {
 };
 
 const priorityConfig = {
-  low: { color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800', border: 'border-slate-200 dark:border-slate-700' },
-  medium: { color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-primary-900/20', border: 'border-primary-200 dark:border-primary-800' },
-  high: { color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
-  critical: { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
+  low: { color: 'text-slate-400', bg: 'bg-transparent', border: 'border-transparent', icon: MoreHorizontal },
+  medium: { color: 'text-primary-500', bg: 'bg-primary-500/10', border: 'border-primary-500/20', icon: Circle },
+  high: { color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20', icon: AlertCircle },
+  critical: { color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: AlertCircle },
 };
 
 const categoryLabels: Record<string, string> = {
@@ -97,37 +97,27 @@ export function OverviewBoard() {
   return (
     <div className="min-h-screen pb-20">
       <Header title="Overview">
-        {/* View toggle */}
-        <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg gap-0.5 ml-8 border border-slate-200 dark:border-slate-700">
+        {/* View toggle - Linear style */}
+        <div className="hidden md:flex items-center bg-slate-100/50 dark:bg-white/5 p-1 rounded-md ml-4 border border-slate-200/60 dark:border-white/5">
           <button
             onClick={() => setCurrentView('board')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${currentView === 'board'
-              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${currentView === 'board'
+              ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
           >
-            <Kanban className="w-3.5 h-3.5" />
+            <Kanban strokeWidth={1.5} className="w-3.5 h-3.5" />
             Board
           </button>
           <button
             onClick={() => setCurrentView('list')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${currentView === 'list'
-              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${currentView === 'list'
+              ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
           >
-            <List className="w-3.5 h-3.5" />
+            <List strokeWidth={1.5} className="w-3.5 h-3.5" />
             List
-          </button>
-          <button
-            onClick={() => setCurrentView('gantt')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${currentView === 'gantt'
-              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
-              }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            Timeline
           </button>
         </div>
       </Header>
@@ -144,7 +134,7 @@ export function OverviewBoard() {
                 : 'text-slate-500 dark:text-slate-400'
                 }`}
             >
-              <Kanban className="w-3.5 h-3.5" />
+              <Kanban strokeWidth={1.5} className="w-3.5 h-3.5" />
               Board
             </button>
             <button
@@ -154,7 +144,7 @@ export function OverviewBoard() {
                 : 'text-slate-500 dark:text-slate-400'
                 }`}
             >
-              <List className="w-3.5 h-3.5" />
+              <List strokeWidth={1.5} className="w-3.5 h-3.5" />
               List
             </button>
             <button
@@ -164,7 +154,7 @@ export function OverviewBoard() {
                 : 'text-slate-500 dark:text-slate-400'
                 }`}
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar strokeWidth={1.5} className="w-3.5 h-3.5" />
               Timeline
             </button>
           </div>
@@ -173,7 +163,7 @@ export function OverviewBoard() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button className="btn-primary flex-1 md:flex-none justify-center" onClick={handleOpenCreateModal}>
-                <Plus className="w-4 h-4" />
+                <Plus strokeWidth={1.5} className="w-4 h-4" />
                 New Task
               </button>
               <div className="flex-1 md:flex-none">
@@ -279,7 +269,7 @@ function BoardView({ tasks, onDragDrop, onEdit, onDelete, onAddToColumn }: Board
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="flex gap-6 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-thin">
       {columns.map((column) => {
         const columnTasks = tasks.filter((t) => t.status === column.id);
         const StatusIcon = statusIcons[column.id];
@@ -288,31 +278,31 @@ function BoardView({ tasks, onDragDrop, onEdit, onDelete, onAddToColumn }: Board
         return (
           <div
             key={column.id}
-            className={`flex flex-col h-full transition-all ${isOver ? 'scale-[1.02]' : ''}`}
+            className="flex flex-col min-w-[260px] md:min-w-[280px] w-[260px] md:w-[280px] h-full"
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDrop={(e) => handleDrop(e, column.id)}
             onDragLeave={() => setDragOverColumn(null)}
           >
-            <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center justify-between mb-2.5 px-1.5">
               <div className="flex items-center gap-2">
-                <StatusIcon className={`w-4 h-4 ${column.id === 'completed' ? 'text-emerald-500' : column.id === 'urgent' ? 'text-red-500' : column.id === 'in-progress' ? 'text-primary-500' : 'text-slate-400'}`} />
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <StatusIcon strokeWidth={1.5} className={`w-3.5 h-3.5 ${column.color}`} />
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {column.title}
                 </h3>
-                <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600">
                   {columnTasks.length}
                 </span>
               </div>
               <button
                 onClick={() => onAddToColumn(column.id)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-opacity"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-opacity p-0.5"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
 
             <div
-              className={`space-y-3 min-h-[200px] p-2 rounded-xl transition-colors ${isOver ? 'bg-primary-50 dark:bg-primary-900/10 ring-2 ring-primary-500/20' : ''
+              className={`space-y-2 min-h-[200px] rounded-lg transition-colors p-1 ${isOver ? 'bg-slate-100/50 dark:bg-white/5' : ''
                 }`}
             >
               {columnTasks.map((task) => (
@@ -328,10 +318,10 @@ function BoardView({ tasks, onDragDrop, onEdit, onDelete, onAddToColumn }: Board
               ))}
               <button
                 onClick={() => onAddToColumn(column.id)}
-                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 border-dashed transition-all"
+                className="w-full py-1.5 flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-white/5 rounded-md border border-transparent hover:border-slate-200/60 dark:hover:border-white/10 transition-all group"
               >
-                <Plus className="w-4 h-4" />
-                Add Task
+                <Plus strokeWidth={1.5} className="w-3 h-3 transition-transform group-hover:scale-110" />
+                Add issue
               </button>
             </div>
           </div>
@@ -353,36 +343,40 @@ interface TaskCardProps {
 function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }: TaskCardProps) {
   const priority = priorityConfig[task.priority];
   const [showMenu, setShowMenu] = useState(false);
+  const StatusIcon = statusIcons[task.status];
 
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task.id)}
       onDragEnd={onDragEnd}
-      className={`bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-700/50 transition-all cursor-grab active:cursor-grabbing group ${isDragging ? 'opacity-50 scale-95' : ''
+      className={`bg-white dark:bg-[#111111] rounded-lg p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200/60 dark:border-white/5 hover:border-primary-500/50 dark:hover:border-primary-500/30 transition-all cursor-grab active:cursor-grabbing group ${isDragging ? 'opacity-40 grayscale scale-[0.98]' : ''
         }`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          {categoryLabels[task.category] || task.category}
-        </span>
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <StatusIcon strokeWidth={1.5} className={`w-3.5 h-3.5 flex-shrink-0 ${task.status === 'completed' ? 'text-emerald-500' : task.status === 'urgent' ? 'text-red-500' : task.status === 'in-progress' ? 'text-primary-500' : 'text-slate-400'}`} />
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-500 truncate uppercase tracking-tight">
+            OPS-{task.id.slice(0, 3)}
+          </span>
+        </div>
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <MoreHorizontal strokeWidth={1.5} className="w-3.5 h-3.5" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-10 py-1 min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-black border border-slate-200/60 dark:border-white/10 rounded-md shadow-xl z-20 py-1 min-w-[120px] animate-slide-up origin-top-right">
               <button
                 onClick={() => {
                   setShowMenu(false);
                   onEdit(task);
                 }}
-                className="w-full px-3 py-1.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2"
+                className="w-full px-3 py-1.5 text-left text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2"
               >
-                <Pencil className="w-3.5 h-3.5" />
+                <Pencil className="w-3 h-3 text-slate-400" />
                 Edit
               </button>
               <button
@@ -390,9 +384,9 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
                   setShowMenu(false);
                   onDelete(task);
                 }}
-                className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
+                className="w-full px-3 py-1.5 text-left text-[11px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" />
                 Delete
               </button>
             </div>
@@ -402,20 +396,24 @@ function TaskCard({ task, isDragging, onDragStart, onDragEnd, onEdit, onDelete }
 
       <h4
         onClick={() => onEdit(task)}
-        className="text-sm font-medium text-slate-900 dark:text-white mb-4 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors cursor-pointer"
+        className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] mb-3 line-clamp-2 leading-relaxed cursor-pointer group-hover:text-primary-500 transition-colors"
       >
         {task.title}
       </h4>
 
-      <div className="flex items-center justify-between mt-auto">
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${priority.bg} ${priority.color} ${priority.border}`}>
-          {task.priority === 'critical' || task.priority === 'high' ? <AlertCircle className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
-          {task.priority}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <div className={`p-1 rounded bg-slate-100/50 dark:bg-white/5 border border-transparent group-hover:border-slate-200 dark:group-hover:border-white/10 transition-colors ${priority.color}`} title={task.priority}>
+            <priority.icon className="w-3 h-3" />
+          </div>
+          <span className="text-[10px] text-slate-500 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-slate-300 transition-colors capitalize font-medium">
+            {categoryLabels[task.category] || task.category}
+          </span>
         </div>
 
         {task.assignee_name && (
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-white dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 text-[10px] font-bold shadow-sm ring-2 ring-transparent group-hover:ring-primary-50 dark:group-hover:ring-primary-900/20 transition-all">
-            {task.assignee_name.split(' ').map(n => n[0]).join('')}
+          <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-[9px] font-bold shadow-sm transition-transform group-hover:scale-105" title={task.assignee_name}>
+            {task.assignee_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
         )}
       </div>
@@ -763,102 +761,82 @@ interface ListViewProps {
 
 function ListView({ tasks, onEdit, onDelete }: ListViewProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+    <div className="bg-white dark:bg-[#080808] rounded-lg border border-slate-200/60 dark:border-white/5 overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div className="overflow-x-auto scrollbar-thin">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-left">
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-1/3">
-                Task Details
-              </th>
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Priority
-              </th>
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Due Date
-              </th>
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Assignee
-              </th>
-              <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
-                Actions
-              </th>
+            <tr className="border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+              <th className="px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Issue</th>
+              <th className="hidden sm:table-cell px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Priority</th>
+              <th className="hidden lg:table-cell px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Category</th>
+              <th className="hidden md:table-cell px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Assignee</th>
+              <th className="px-4 py-2.5 text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {tasks.map((task) => {
-              const StatusIcon = statusIcons[task.status];
               const priority = priorityConfig[task.priority];
-
+              const StatusIcon = statusIcons[task.status];
               return (
-                <tr key={task.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
-                  <td className="px-6 py-3">
-                    <div className="flex flex-col">
-                      <span
-                        onClick={() => onEdit(task)}
-                        className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors cursor-pointer"
-                      >
-                        {task.title}
+                <tr
+                  key={task.id}
+                  onClick={() => onEdit(task)}
+                  className="group hover:bg-slate-50/50 dark:hover:bg-white/[0.02] cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight flex-shrink-0">
+                        OPS-{task.id.slice(0, 3)}
                       </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {categoryLabels[task.category] || task.category}
+                      <span className="text-[13px] font-semibold text-slate-900 dark:text-[#EEEEEE] truncate group-hover:text-primary-500 transition-colors">
+                        {task.title}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <StatusIcon className={`w-3.5 h-3.5 ${task.status === 'completed' ? 'text-emerald-500' :
-                        task.status === 'urgent' ? 'text-red-500' :
-                          task.status === 'in-progress' ? 'text-primary-500' :
-                            'text-slate-400'
-                        }`} />
-                      <span className="text-sm text-slate-600 dark:text-slate-300 capitalize">
+                  <td className="hidden sm:table-cell px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <StatusIcon className={`w-3.5 h-3.5 ${task.status === 'completed' ? 'text-emerald-500' : task.status === 'urgent' ? 'text-red-500' : task.status === 'in-progress' ? 'text-primary-500' : 'text-slate-400'}`} />
+                      <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 capitalize">
                         {task.status.replace('-', ' ')}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-3">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide border ${priority.bg} ${priority.color} ${priority.border} text-[10px]`}>
-                      {task.priority === 'critical' ? <AlertCircle className="w-3 h-3" /> : null}
+                  <td className="px-4 py-3">
+                    <div className={`tag ${priority.bg} ${priority.color} border ${priority.border}`}>
                       {task.priority}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-mono">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-3">
+                  <td className="hidden lg:table-cell px-4 py-3">
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      {categoryLabels[task.category] || task.category}
+                    </span>
+                  </td>
+                  <td className="hidden md:table-cell px-4 py-3">
                     {task.assignee_name ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700">
-                          {task.assignee_name.split(' ').map(n => n[0]).join('')}
+                        <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-[9px] font-bold text-slate-500">
+                          {task.assignee_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {task.assignee_name}
-                        </span>
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{task.assignee_name}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-slate-400">-</span>
+                      <span className="text-[11px] text-slate-400 italic">Unassigned</span>
                     )}
                   </td>
-                  <td className="px-6 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <button
-                        onClick={() => onEdit(task)}
-                        className="p-1.5 rounded text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); onEdit(task); }}
+                        className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 md:opacity-0 md:group-hover:opacity-100 transition-all"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => onDelete(task)}
-                        className="p-1.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+                        className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 md:opacity-0 md:group-hover:opacity-100 transition-all"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>

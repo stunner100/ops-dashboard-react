@@ -136,6 +136,41 @@ export function useInbox() {
     };
 
     /**
+     * Create a new notification (for task assignments, etc.)
+     */
+    const createNotification = async (
+        userId: string,
+        notification: {
+            type: NotificationType;
+            title: string;
+            description?: string;
+            priority?: NotificationPriority;
+            link?: string;
+        }
+    ): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error: insertError } = await supabase
+                .from('notifications')
+                .insert({
+                    user_id: userId,
+                    type: notification.type,
+                    title: notification.title,
+                    description: notification.description || null,
+                    priority: notification.priority || 'medium',
+                    link: notification.link || null,
+                    read: false,
+                });
+
+            if (insertError) throw insertError;
+            return { success: true };
+        } catch (err) {
+            console.error('Error creating notification:', err);
+            return { success: false, error: 'Failed to create notification' };
+        }
+    };
+
+
+    /**
      * Format timestamp to relative time (e.g., "5 min ago")
      */
     const formatTimestamp = (timestamp: string): string => {
@@ -219,6 +254,7 @@ export function useInbox() {
         markAsRead,
         markAllAsRead,
         deleteNotification,
+        createNotification,
         formatTimestamp,
     };
 }

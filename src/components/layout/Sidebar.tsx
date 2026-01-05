@@ -1,11 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  BarChart3,
-  BookOpen,
+  Layers,
+  Activity,
+  Library,
   MessageSquare,
-  Bell,
-  Users,
+  Inbox,
+  Shield,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -20,12 +20,12 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  { name: 'Overview', href: '/', icon: LayoutDashboard },
-  { name: 'KPIs', href: '/kpi', icon: BarChart3 },
-  { name: 'Library', href: '/sop', icon: BookOpen },
+  { name: 'Overview', href: '/', icon: Layers },
+  { name: 'KPIs', href: '/kpi', icon: Activity },
+  { name: 'Library', href: '/sop', icon: Library },
   { name: 'Team Chat', href: '/chat', icon: MessageSquare },
-  { name: 'Inbox', href: '/notifications', icon: Bell },
-  { name: 'User Management', href: '/admin/users', icon: Users, adminOnly: true },
+  { name: 'Inbox', href: '/notifications', icon: Inbox },
+  { name: 'User Management', href: '/admin/users', icon: Shield, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -55,33 +55,33 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed left-0 top-0 h-screen bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl 
-          border-r border-slate-200/60 dark:border-slate-800/60 flex flex-col z-50
-          transition-transform duration-300 ease-out w-[260px]
+          fixed left-0 top-0 h-screen bg-white dark:bg-[#080808] 
+          border-r border-slate-200/60 dark:border-white/5 flex flex-col z-50
+          transition-transform duration-300 ease-out w-[240px]
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           md:translate-x-0
         `}
       >
         {/* Brand */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
-          <NavLink to="/" className="flex items-center gap-3 group" onClick={handleNavClick}>
+        <div className="h-13 flex items-center justify-between px-5 border-b border-slate-100 dark:border-white/5">
+          <NavLink to="/" className="flex items-center gap-2.5 group" onClick={handleNavClick}>
             <Logo showText={true} size="sm" />
           </NavLink>
           {/* Mobile close button */}
           <button
             onClick={closeSidebar}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors md:hidden"
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors md:hidden"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-6 px-3 overflow-y-auto scrollbar-thin">
-          <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-            Menu
+        <nav className="flex-1 py-4 px-2 overflow-y-auto scrollbar-thin">
+          <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">
+            Navigation
           </div>
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {filteredNav.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -89,13 +89,16 @@ export function Sidebar() {
                   <NavLink
                     to={item.href}
                     onClick={handleNavClick}
-                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${isActive
-                      ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'
+                    className={`relative flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 group ${isActive
+                      ? 'text-primary-500 bg-primary-500/5 dark:bg-primary-500/10'
+                      : 'text-slate-600 dark:text-[#999999] hover:bg-slate-100/50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                       }`}
                   >
-                    <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-primary-500' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-                    <span>{item.name}</span>
+                    <item.icon
+                      strokeWidth={1.5}
+                      className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? 'text-primary-500' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
+                    />
+                    <span className="truncate">{item.name}</span>
                   </NavLink>
                 </li>
               );
@@ -104,10 +107,14 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
-          <p className="text-xs text-center text-slate-400 dark:text-slate-500">
-            © 2024 Night Market
-          </p>
+        <div className="p-4 border-t border-slate-100 dark:border-white/5">
+          <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-medium px-1">
+            <span>© 2024 Night Market</span>
+            <div className="flex gap-2">
+              <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors text-[9px] uppercase tracking-tighter">API</span>
+              <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors text-[9px] uppercase tracking-tighter">v1.2.0</span>
+            </div>
+          </div>
         </div>
       </aside>
     </>

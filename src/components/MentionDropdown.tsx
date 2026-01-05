@@ -6,10 +6,9 @@ interface MentionDropdownProps {
     searchQuery: string;
     onSelect: (member: ChannelMember) => void;
     onClose: () => void;
-    position: { top: number; left: number };
 }
 
-export function MentionDropdown({ members, searchQuery, onSelect, onClose, position }: MentionDropdownProps) {
+export function MentionDropdown({ members, searchQuery, onSelect, onClose }: MentionDropdownProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Filter members based on search query
@@ -51,10 +50,10 @@ export function MentionDropdown({ members, searchQuery, onSelect, onClose, posit
     return (
         <div
             ref={dropdownRef}
-            className="absolute z-50 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-slide-up"
-            style={{ bottom: `calc(100% + 8px)`, left: position.left }}
+            className="absolute z-50 w-64 bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/10 rounded-lg shadow-xl overflow-hidden"
+            style={{ bottom: 0, left: 0 }}
         >
-            <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+            <div className="px-3 py-2 border-b border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Mention someone
                 </p>
