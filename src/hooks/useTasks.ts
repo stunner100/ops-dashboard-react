@@ -120,11 +120,50 @@ export function useTasks() {
 
             // Send notifications to all assignees
             if (assigneesToNotify.length > 0) {
+                // Build rich description with task details
+                const categoryLabels: Record<string, string> = {
+                    'vendor_ops': 'Vendor Ops',
+                    'rider_fleet': 'Rider Fleet',
+                    'customer_service': 'Customer Service',
+                    'business_development': 'Business Development',
+                    'dashboard_support': 'Dashboard Support',
+                };
+                const priorityLabels: Record<string, string> = {
+                    'low': '🟢 Low',
+                    'medium': '🟡 Medium',
+                    'high': '🟠 High',
+                    'critical': '🔴 Critical',
+                };
+
+                let description = `📋 ${input.title}\n`;
+                description += `📁 Category: ${categoryLabels[input.category] || input.category}\n`;
+                description += `⚡ Priority: ${priorityLabels[input.priority || 'medium']}\n`;
+
+                if (input.due_date) {
+                    const dueDate = new Date(input.due_date);
+                    const now = new Date();
+                    const diff = dueDate.getTime() - now.getTime();
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                    description += `📅 Due: ${dueDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`;
+                    if (diff > 0) {
+                        description += ` (${days > 0 ? days + 'd ' : ''}${hours}h remaining)`;
+                    } else {
+                        description += ` (Overdue!)`;
+                    }
+                    description += '\n';
+                }
+
+                if (input.description) {
+                    description += `\n${input.description}`;
+                }
+
                 const notifications = assigneesToNotify.map((assigneeId) => ({
                     user_id: assigneeId,
                     type: 'update',
-                    title: 'You have been assigned a task',
-                    description: `Task: ${input.title}`,
+                    title: '📌 New Task Assignment',
+                    description: description.trim(),
                     priority: input.priority || 'medium',
                     link: `/?task=${data.id}`,
                     read: false,
@@ -186,11 +225,50 @@ export function useTasks() {
 
             // Send notifications to all new assignees
             if (assigneesToNotify.length > 0) {
+                // Build rich description with task details
+                const categoryLabels: Record<string, string> = {
+                    'vendor_ops': 'Vendor Ops',
+                    'rider_fleet': 'Rider Fleet',
+                    'customer_service': 'Customer Service',
+                    'business_development': 'Business Development',
+                    'dashboard_support': 'Dashboard Support',
+                };
+                const priorityLabels: Record<string, string> = {
+                    'low': '🟢 Low',
+                    'medium': '🟡 Medium',
+                    'high': '🟠 High',
+                    'critical': '🔴 Critical',
+                };
+
+                let description = `📋 ${data.title}\n`;
+                description += `📁 Category: ${categoryLabels[data.category] || data.category}\n`;
+                description += `⚡ Priority: ${priorityLabels[data.priority || 'medium']}\n`;
+
+                if (data.due_date) {
+                    const dueDate = new Date(data.due_date);
+                    const now = new Date();
+                    const diff = dueDate.getTime() - now.getTime();
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                    description += `📅 Due: ${dueDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`;
+                    if (diff > 0) {
+                        description += ` (${days > 0 ? days + 'd ' : ''}${hours}h remaining)`;
+                    } else {
+                        description += ` (Overdue!)`;
+                    }
+                    description += '\n';
+                }
+
+                if (data.description) {
+                    description += `\n${data.description}`;
+                }
+
                 const notifications = assigneesToNotify.map((assigneeId) => ({
                     user_id: assigneeId,
                     type: 'update',
-                    title: 'You have been assigned a task',
-                    description: `Task: ${data.title}`,
+                    title: '📌 New Task Assignment',
+                    description: description.trim(),
                     priority: data.priority || 'medium',
                     link: `/?task=${data.id}`,
                     read: false,

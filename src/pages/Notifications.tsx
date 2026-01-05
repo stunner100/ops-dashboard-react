@@ -136,7 +136,7 @@ export function Notifications() {
                           {formatTimestamp(notification.created_at)}
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">
                         {notification.description}
                       </p>
                       <div className="flex items-center gap-2 mt-3">
