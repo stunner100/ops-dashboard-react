@@ -166,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
+      console.log('Profile fetched successfully:', { id: data.id, is_approved: data.is_approved, role: data.role });
       setProfile(data);
     } catch (error) {
       console.error('Error in fetchProfile:', error);
