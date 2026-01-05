@@ -101,19 +101,36 @@ export function useTasks() {
             // Optimistically update local state
             setTasks((prev) => [data, ...prev]);
 
-            // Create notification for assignee if assigned
+            // Create notification for assignee(s) if assigned
+            const assigneesToNotify: string[] = [];
+
+            // Add single assignee if exists
             if (input.assignee_id && input.assignee_id !== user?.id) {
-                await supabase
-                    .from('notifications')
-                    .insert({
-                        user_id: input.assignee_id,
-                        type: 'update',
-                        title: 'You have been assigned a task',
-                        description: `Task: ${input.title}`,
-                        priority: input.priority || 'medium',
-                        link: `/?task=${data.id}`,
-                        read: false,
-                    });
+                assigneesToNotify.push(input.assignee_id);
+            }
+
+            // Add all assignees from assignee_ids array
+            if (input.assignee_ids && input.assignee_ids.length > 0) {
+                input.assignee_ids.forEach((id) => {
+                    if (id !== user?.id && !assigneesToNotify.includes(id)) {
+                        assigneesToNotify.push(id);
+                    }
+                });
+            }
+
+            // Send notifications to all assignees
+            if (assigneesToNotify.length > 0) {
+                const notifications = assigneesToNotify.map((assigneeId) => ({
+                    user_id: assigneeId,
+                    type: 'update',
+                    title: 'You have been assigned a task',
+                    description: `Task: ${input.title}`,
+                    priority: input.priority || 'medium',
+                    link: `/?task=${data.id}`,
+                    read: false,
+                }));
+
+                await supabase.from('notifications').insert(notifications);
             }
 
             return { success: true };
@@ -142,21 +159,44 @@ export function useTasks() {
             // Update local state
             setTasks((prev) => prev.map((t) => (t.id === id ? data : t)));
 
-            // Create notification if assignee changed
+            // Create notification for new assignee(s)
+            const assigneesToNotify: string[] = [];
+            const previousAssigneeIds = currentTask?.assignee_ids || [];
+            const previousAssigneeId = currentTask?.assignee_id;
+
+            // Check single assignee change
             if (updates.assignee_id &&
-                updates.assignee_id !== currentTask?.assignee_id &&
+                updates.assignee_id !== previousAssigneeId &&
                 updates.assignee_id !== user?.id) {
-                await supabase
-                    .from('notifications')
-                    .insert({
-                        user_id: updates.assignee_id,
-                        type: 'update',
-                        title: 'You have been assigned a task',
-                        description: `Task: ${data.title}`,
-                        priority: data.priority || 'medium',
-                        link: `/?task=${data.id}`,
-                        read: false,
-                    });
+                assigneesToNotify.push(updates.assignee_id);
+            }
+
+            // Check multi-assignee changes
+            if (updates.assignee_ids && updates.assignee_ids.length > 0) {
+                updates.assignee_ids.forEach((id) => {
+                    // Only notify if this is a new assignee
+                    if (id !== user?.id &&
+                        !previousAssigneeIds.includes(id) &&
+                        id !== previousAssigneeId &&
+                        !assigneesToNotify.includes(id)) {
+                        assigneesToNotify.push(id);
+                    }
+                });
+            }
+
+            // Send notifications to all new assignees
+            if (assigneesToNotify.length > 0) {
+                const notifications = assigneesToNotify.map((assigneeId) => ({
+                    user_id: assigneeId,
+                    type: 'update',
+                    title: 'You have been assigned a task',
+                    description: `Task: ${data.title}`,
+                    priority: data.priority || 'medium',
+                    link: `/?task=${data.id}`,
+                    read: false,
+                }));
+
+                await supabase.from('notifications').insert(notifications);
             }
 
             return { success: true };
