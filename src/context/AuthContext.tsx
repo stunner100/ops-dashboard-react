@@ -60,13 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Listen for auth changes - DO NOT await fetchProfile here as it can block signUp
+    // Listen for auth changes 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Fire and forget - don't block the auth change handler
+          // Set loading true to wait for profile before routing
+          if (event === 'SIGNED_IN') {
+            setLoading(true);
+          }
           fetchProfileWithTimeout(session.user.id);
         } else {
           setProfile(null);
