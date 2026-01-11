@@ -5,7 +5,7 @@ import {
     TrendingUp, Loader2, ChevronDown, CheckCircle, Clock, AlertTriangle
 } from 'lucide-react';
 import { useReports, type ReportFilters } from '../hooks/useReports';
-import type { TaskCategory, TaskStatus, TaskPriority } from '../hooks/useTasks';
+import type { TaskCategory, TaskStatus } from '../hooks/useTasks';
 
 type ReportType = 'summary' | 'productivity' | 'team';
 
@@ -29,14 +29,6 @@ const statusColors: Record<TaskStatus, string> = {
     'in-progress': 'bg-primary-500',
     urgent: 'bg-red-500',
     completed: 'bg-emerald-500',
-};
-
-// Priority labels available for future use
-const _priorityLabels: Record<TaskPriority, string> = {
-    low: 'Low',
-    medium: 'Medium',
-    high: 'High',
-    critical: 'Critical',
 };
 
 export function Reports() {
