@@ -55,4 +55,5 @@ END;
 $$;
 
 -- Grant execute permission to authenticated users
+REVOKE EXECUTE ON FUNCTION match_sop_sections FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION match_sop_sections TO authenticated;

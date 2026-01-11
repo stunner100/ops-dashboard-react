@@ -350,6 +350,26 @@ export function useTasks() {
         };
     }, []);
 
+    // Generate recurring task instances (call this to trigger backend function)
+    const generateRecurringTasks = async (): Promise<{ success: boolean; count?: number; error?: string }> => {
+        try {
+            const { data, error: rpcError } = await supabase
+                .rpc('check_and_generate_recurring_tasks');
+
+            if (rpcError) throw rpcError;
+
+            // Refetch tasks to show new instances
+            if (data?.generated_count > 0) {
+                await fetchTasks();
+            }
+
+            return { success: true, count: data?.generated_count || 0 };
+        } catch (err) {
+            console.error('Error generating recurring tasks:', err);
+            return { success: false, error: 'Failed to generate recurring tasks' };
+        }
+    };
+
     return {
         tasks,
         loading,
@@ -358,6 +378,7 @@ export function useTasks() {
         updateTask,
         deleteTask,
         updateTaskStatus,
+        generateRecurringTasks,
         refetch: fetchTasks,
     };
 }

@@ -44,11 +44,17 @@ interface SOPPolicy {
 const functionsUrl = `${SUPABASE_CONFIG.url}/functions/v1`;
 
 async function callFunction<T>(functionName: string, data: Record<string, unknown> = {}): Promise<T> {
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+        throw new Error('Authentication required');
+    }
+
     const response = await fetch(`${functionsUrl}/${functionName}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`,
+            'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify(data),
     });
@@ -77,7 +83,11 @@ export function useRAG() {
         setError(null);
 
         const searchTerm = query.trim().toLowerCase();
-        if (!searchTerm) {
+        const safeSearchTerm = searchTerm
+            .replace(/[^a-z0-9 _-]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!safeSearchTerm) {
             setLoading(false);
             return [];
         }
@@ -100,7 +110,7 @@ export function useRAG() {
                         )
                     `)
                     .eq('document.status', 'active')
-                    .or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
+                    .or(`title.ilike.%${safeSearchTerm}%,content.ilike.%${safeSearchTerm}%`)
                     .limit(limit);
 
                 if (department) {
@@ -115,9 +125,9 @@ export function useRAG() {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let results: SearchResult[] = (sectionData || []).map((row: any) => {
                     const doc = Array.isArray(row.document) ? row.document[0] : row.document;
-                    const titleMatch = row.title?.toLowerCase().includes(searchTerm) ? 0.3 : 0;
-                    const contentMatch = row.content?.toLowerCase().includes(searchTerm) ? 0.2 : 0;
-                    const exactMatch = row.title?.toLowerCase() === searchTerm ? 0.2 : 0;
+                    const titleMatch = row.title?.toLowerCase().includes(safeSearchTerm) ? 0.3 : 0;
+                    const contentMatch = row.content?.toLowerCase().includes(safeSearchTerm) ? 0.2 : 0;
+                    const exactMatch = row.title?.toLowerCase() === safeSearchTerm ? 0.2 : 0;
 
                     return {
                         id: row.id,
@@ -135,7 +145,7 @@ export function useRAG() {
                         .from('sop_documents')
                         .select('id, title, department, description, status')
                         .eq('status', 'active')
-                        .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+                        .or(`title.ilike.%${safeSearchTerm}%,description.ilike.%${safeSearchTerm}%`)
                         .limit(limit);
 
                     if (department) {
@@ -149,9 +159,9 @@ export function useRAG() {
                     // Map document results to SearchResult format
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     results = (docData || []).map((doc: any) => {
-                        const titleMatch = doc.title?.toLowerCase().includes(searchTerm) ? 0.35 : 0;
-                        const descMatch = doc.description?.toLowerCase().includes(searchTerm) ? 0.2 : 0;
-                        const exactMatch = doc.title?.toLowerCase() === searchTerm ? 0.2 : 0;
+                        const titleMatch = doc.title?.toLowerCase().includes(safeSearchTerm) ? 0.35 : 0;
+                        const descMatch = doc.description?.toLowerCase().includes(safeSearchTerm) ? 0.2 : 0;
+                        const exactMatch = doc.title?.toLowerCase() === safeSearchTerm ? 0.2 : 0;
 
                         return {
                             id: doc.id,
@@ -465,4 +475,3 @@ export function useRAG() {
 }
 
 export type { SearchResult, ChatResponse, SOPDocument, SOPPolicy };
-

@@ -1,0 +1,29 @@
+{
+    "name": "Night Market Ops Center",
+    "short_name": "OpsCenter",
+    "description": "Night Market Operations Dashboard for task management, team communication, and analytics",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0f0f",
+    "theme_color": "#f59e0b",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "productivity",
+        "business"
+    ],
+    "screenshots": []
+}

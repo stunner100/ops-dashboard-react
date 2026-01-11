@@ -3,11 +3,12 @@ import { Header } from '../components/layout';
 import { TaskModal } from '../components/TaskModal';
 import { FilterPanel } from '../components/FilterPanel';
 import { BoardModal } from '../components/BoardModal';
+import { CalendarView } from '../components/CalendarView';
 import { useTasks, filterTasks, useBoards } from '../hooks';
 import type { Task, TaskInput, TaskFilters, TaskStatus, Board } from '../hooks';
-import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2, Repeat, ChevronDown, Folder, Star, Briefcase, Target, Zap, Heart, Bookmark, Flag, Archive, LayoutGrid } from 'lucide-react';
+import { Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2, Circle, Calendar, List, Kanban, Trash2, Pencil, Loader2, Repeat, ChevronDown, Folder, Star, Briefcase, Target, Zap, Heart, Bookmark, Flag, Archive, LayoutGrid, CalendarDays } from 'lucide-react';
 
-type ViewType = 'board' | 'gantt' | 'list';
+type ViewType = 'board' | 'gantt' | 'list' | 'calendar';
 type GanttZoom = 'day' | 'week' | 'month';
 
 const columns = [
@@ -128,6 +129,13 @@ export function OverviewBoard() {
     setIsModalOpen(true);
   };
 
+  // Handler for adding task from calendar on specific date
+  const handleAddTaskFromCalendar = (_date: Date) => {
+    setEditingTask(null);
+    setIsModalOpen(true);
+    // The TaskModal will use current date, user can adjust
+  };
+
   // Drag & drop handler
   const handleDragDrop = useCallback(
     async (taskId: string, newStatus: TaskStatus) => {
@@ -169,6 +177,16 @@ export function OverviewBoard() {
             <List strokeWidth={1.5} className="w-3.5 h-3.5" />
             List
           </button>
+          <button
+            onClick={() => setCurrentView('calendar')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${currentView === 'calendar'
+              ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+          >
+            <CalendarDays strokeWidth={1.5} className="w-3.5 h-3.5" />
+            Calendar
+          </button>
         </div>
       </Header>
 
@@ -206,6 +224,16 @@ export function OverviewBoard() {
             >
               <Calendar strokeWidth={1.5} className="w-3.5 h-3.5" />
               Timeline
+            </button>
+            <button
+              onClick={() => setCurrentView('calendar')}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${currentView === 'calendar'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                : 'text-slate-500 dark:text-slate-400'
+                }`}
+            >
+              <CalendarDays strokeWidth={1.5} className="w-3.5 h-3.5" />
+              Calendar
             </button>
           </div>
 
@@ -354,6 +382,13 @@ export function OverviewBoard() {
             tasks={boardFilteredTasks}
             onEdit={handleEditTask}
             onDelete={handleDeleteTask}
+          />
+        )}
+        {currentView === 'calendar' && (
+          <CalendarView
+            tasks={boardFilteredTasks}
+            onEdit={handleEditTask}
+            onAddTask={handleAddTaskFromCalendar}
           />
         )}
       </div>

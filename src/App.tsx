@@ -11,6 +11,10 @@ import { KPIBoard } from './pages/KPIBoard';
 import { SOPLibrary } from './pages/SOPLibrary';
 import { TeamChat } from './pages/TeamChat';
 import { Notifications } from './pages/Notifications';
+import { Goals } from './pages/Goals';
+import { Reports } from './pages/Reports';
+import { Dashboard } from './pages/Dashboard';
+import { Settings } from './pages/Settings';
 import { PendingApproval } from './pages/PendingApproval';
 import { UserManagement } from './pages/UserManagement';
 
@@ -82,6 +86,10 @@ function AppRoutes() {
         <Route path="sop" element={<SOPLibrary />} />
         <Route path="chat" element={<TeamChat />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="goals" element={<Goals />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="admin/users" element={
           <AdminRoute>
             <UserManagement />
@@ -93,6 +101,7 @@ function AppRoutes() {
 }
 
 function App() {
+  console.log('App component rendering');
   return (
     <BrowserRouter>
       <AuthProvider>

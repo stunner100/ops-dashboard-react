@@ -11,6 +11,7 @@ export function jsonResponse(data: unknown, status = 200): Response {
         status,
         headers: {
             ...corsHeaders,
+            'Cache-Control': 'no-store',
             'Content-Type': 'application/json',
         },
     });

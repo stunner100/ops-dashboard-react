@@ -20,6 +20,51 @@ interface ChatResponse {
     }>;
 }
 
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_HISTORY_ITEMS = 10;
+const MAX_HISTORY_CONTENT_LENGTH = 1000;
+const ALLOWED_ROLES = new Set(['user', 'assistant', 'system']);
+
+function normalizeMessage(input: unknown): string | null {
+    if (typeof input !== 'string') return null;
+    const trimmed = input.trim();
+    if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return null;
+    return trimmed;
+}
+
+function normalizeDepartment(input: unknown): string | null {
+    if (input === null || input === undefined) return null;
+    if (typeof input !== 'string') return null;
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    if (trimmed.length > 64) return null;
+    if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed)) return null;
+    return trimmed;
+}
+
+function normalizeHistory(input: unknown): Array<{ role: string; content: string }> {
+    if (!Array.isArray(input)) return [];
+    return input
+        .slice(-MAX_HISTORY_ITEMS)
+        .map((entry) => {
+            const role = typeof entry?.role === 'string' ? entry.role : '';
+            const content = typeof entry?.content === 'string' ? entry.content.trim() : '';
+            if (!ALLOWED_ROLES.has(role) || !content || content.length > MAX_HISTORY_CONTENT_LENGTH) {
+                return null;
+            }
+            return { role, content };
+        })
+        .filter((entry): entry is { role: string; content: string } => entry !== null);
+}
+
+function sanitizeSearchTerm(term: string): string {
+    return term
+        .replace(/[^a-zA-Z0-9 _-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 200);
+}
+
 // Generate embedding for finding relevant context
 async function generateEmbedding(text: string): Promise<number[]> {
     const qwenApiKey = Deno.env.get('QWEN_API_KEY');
@@ -42,6 +87,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
     });
 
     if (!response.ok) {
+        console.error('Embedding generation failed', { status: response.status });
         throw new Error('Embedding generation failed');
     }
 
@@ -93,6 +139,11 @@ async function getTextContext(
     query: string,
     department: string | null
 ): Promise<{ context: string; sources: ChatResponse['sources'] }> {
+    const safeQuery = sanitizeSearchTerm(query);
+    if (!safeQuery) {
+        return { context: '', sources: [] };
+    }
+
     let queryBuilder = supabase
         .from('sop_sections')
         .select(`
@@ -102,7 +153,7 @@ async function getTextContext(
       document:sop_documents!inner(title, department, status)
     `)
         .eq('document.status', 'active')
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+        .or(`title.ilike.%${safeQuery}%,content.ilike.%${safeQuery}%`)
         .limit(5);
 
     if (department) {
@@ -173,8 +224,8 @@ Guidelines:
     });
 
     if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Qwen chat failed: ${error}`);
+        console.error('Qwen chat failed', { status: response.status });
+        throw new Error('Qwen chat failed');
     }
 
     const data = await response.json();
@@ -187,13 +238,38 @@ Deno.serve(async (req) => {
     if (corsResponse) return corsResponse;
 
     try {
-        const { message, department = null, history = [] }: ChatRequest = await req.json();
+        const payload: ChatRequest = await req.json();
+        const message = normalizeMessage(payload.message);
+        const rawDepartment = payload.department;
+        const department = normalizeDepartment(rawDepartment);
+        const hasDepartmentInput = typeof rawDepartment === 'string'
+            ? rawDepartment.trim().length > 0
+            : rawDepartment !== undefined && rawDepartment !== null;
 
-        if (!message || message.trim().length === 0) {
-            return errorResponse('Message is required', 400);
+        if (hasDepartmentInput && department === null) {
+            return errorResponse('Invalid department value', 400);
         }
 
-        const supabase = createSupabaseClient(req.headers.get('Authorization') || undefined);
+        if (payload.history !== undefined && !Array.isArray(payload.history)) {
+            return errorResponse('History must be an array', 400);
+        }
+
+        const history = normalizeHistory(payload.history);
+
+        if (!message) {
+            return errorResponse('Message is required and must be under 2000 characters.', 400);
+        }
+
+        const authHeader = req.headers.get('Authorization') || undefined;
+        if (!authHeader) {
+            return errorResponse('Unauthorized', 401);
+        }
+
+        const supabase = createSupabaseClient(authHeader);
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return errorResponse('Unauthorized', 401);
+        }
 
         // Get relevant SOP context
         const { context, sources } = await getRelevantContext(supabase, message, department);
@@ -207,6 +283,6 @@ Deno.serve(async (req) => {
         return jsonResponse({
             response: 'I apologize, but I encountered an error processing your request. Please try again.',
             sources: [],
-        });
+        }, 500);
     }
 });

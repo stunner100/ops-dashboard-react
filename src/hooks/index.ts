@@ -15,3 +15,12 @@ export type { Notification, NotificationType, NotificationPriority } from './use
 
 export { useBoards } from './useBoards';
 export type { Board, BoardInput } from './useBoards';
+
+export { useComments } from './useComments';
+export type { Comment, CommentInput } from './useComments';
+
+export { useAttachments, formatFileSize, getFileIcon } from './useAttachments';
+export type { Attachment } from './useAttachments';
+
+export { useGoals } from './useGoals';
+export type { Goal, KeyResult, GoalInput, KeyResultInput } from './useGoals';

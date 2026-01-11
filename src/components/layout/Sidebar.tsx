@@ -7,6 +7,10 @@ import {
   Inbox,
   Shield,
   X,
+  Target,
+  FileBarChart2,
+  LayoutDashboard,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
@@ -20,11 +24,15 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Overview', href: '/', icon: Layers },
   { name: 'KPIs', href: '/kpi', icon: Activity },
+  { name: 'Goals', href: '/goals', icon: Target },
+  { name: 'Reports', href: '/reports', icon: FileBarChart2 },
   { name: 'Library', href: '/sop', icon: Library },
   { name: 'Team Chat', href: '/chat', icon: MessageSquare },
   { name: 'Inbox', href: '/notifications', icon: Inbox },
+  { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'User Management', href: '/admin/users', icon: Shield, adminOnly: true },
 ];
 

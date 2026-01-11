@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Users, Check, X, Search, Loader2, Shield, Clock, UserCheck, Trash2 } from 'lucide-react';
+import { Users, Check, X, Search, Loader2, Shield, Clock, UserCheck, Trash2, Mail, Send } from 'lucide-react';
 
 interface UserProfile {
     id: string;
@@ -25,6 +25,12 @@ export function UserManagement() {
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
     const [error, setError] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<UserProfile | null>(null);
+    const [emailSubject, setEmailSubject] = useState('');
+    const [emailBody, setEmailBody] = useState('');
+    const [emailSending, setEmailSending] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+    const [sendConfirmOpen, setSendConfirmOpen] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -75,6 +81,60 @@ export function UserManagement() {
             setError('Failed to approve user');
         } finally {
             setActionLoading(null);
+        }
+    };
+
+    const sendBroadcastEmail = async () => {
+        const subject = emailSubject.trim();
+        const message = emailBody.trim();
+
+        if (!subject || !message) {
+            setEmailError('Subject and message are required');
+            setEmailSuccess(null);
+            return;
+        }
+
+        try {
+            setEmailSending(true);
+            setEmailError(null);
+            setEmailSuccess(null);
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No active session');
+
+            const response = await fetch(
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/broadcast-email`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ subject, message }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result?.error || 'Failed to send broadcast email');
+            }
+
+            const sent = typeof result?.sent === 'number' ? result.sent : undefined;
+            const failed = typeof result?.failed === 'number' ? result.failed : 0;
+            const detail = sent !== undefined
+                ? `Broadcast queued for ${sent}${failed ? ` (failed: ${failed})` : ''} recipients.`
+                : 'Broadcast queued successfully.';
+
+            setEmailSuccess(detail);
+            setEmailSubject('');
+            setEmailBody('');
+        } catch (err) {
+            console.error('Error sending broadcast email:', err);
+            setEmailError(err instanceof Error ? err.message : 'Failed to send broadcast email');
+        } finally {
+            setEmailSending(false);
+            setSendConfirmOpen(false);
         }
     };
 
@@ -177,6 +237,8 @@ export function UserManagement() {
 
     const pendingCount = users.filter(u => !u.is_approved).length;
     const approvedCount = users.filter(u => u.is_approved).length;
+    const emailRecipientCount = users.filter(user => Boolean(user.email)).length;
+    const canSendEmail = emailSubject.trim().length > 0 && emailBody.trim().length > 0;
 
     const formatRole = (role: string) => {
         return role.split('_').map(word =>
@@ -288,6 +350,105 @@ export function UserManagement() {
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Email Broadcast */}
+            <div className="bg-white dark:bg-[#080808] rounded-xl p-6 border border-slate-200/60 dark:border-white/5 shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+                    <div className="flex items-start gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center">
+                            <Mail strokeWidth={1.5} className="w-5 h-5 text-slate-900 dark:text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em]">
+                                Broadcast Email
+                            </h3>
+                            <p className="text-[14px] font-semibold text-slate-900 dark:text-white mt-1">
+                                Send a message to every registered user.
+                            </p>
+                            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-1">
+                                Delivery is handled by the Supabase Edge Function email provider.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                        {emailRecipientCount} Recipients
+                    </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.12em] mb-2">
+                                Subject
+                            </label>
+                            <input
+                                type="text"
+                                value={emailSubject}
+                                onChange={(e) => {
+                                    setEmailSubject(e.target.value);
+                                    if (emailError) setEmailError(null);
+                                    if (emailSuccess) setEmailSuccess(null);
+                                }}
+                                placeholder="Quarterly update, policy change, alert..."
+                                className="block w-full px-3 py-2 bg-slate-100/60 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.12em] mb-2">
+                                Message
+                            </label>
+                            <textarea
+                                value={emailBody}
+                                onChange={(e) => {
+                                    setEmailBody(e.target.value);
+                                    if (emailError) setEmailError(null);
+                                    if (emailSuccess) setEmailSuccess(null);
+                                }}
+                                rows={7}
+                                placeholder="Write the announcement you want to send..."
+                                className="block w-full px-3 py-2 bg-slate-100/60 dark:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-primary-500/50 transition-all font-medium resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-50/70 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-xl p-5 flex flex-col justify-between gap-4">
+                        <div className="space-y-3 text-[12px] text-slate-500 dark:text-slate-400">
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Delivery</p>
+                                <p className="font-medium">From: Configured sender address</p>
+                                <p className="font-medium">Recipients: {emailRecipientCount} users</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Best Practice</p>
+                                <p className="font-medium">Keep subject lines short and action-focused.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setSendConfirmOpen(true)}
+                            disabled={!canSendEmail || emailSending}
+                            className="w-full px-4 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-white/10 text-white text-[13px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            {emailSending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Send strokeWidth={1.5} className="w-4 h-4" />
+                            )}
+                            Send Broadcast
+                        </button>
+                    </div>
+                </div>
+
+                {emailError && (
+                    <div className="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-[12px] font-medium text-red-600 dark:text-red-400">
+                        {emailError}
+                    </div>
+                )}
+                {emailSuccess && (
+                    <div className="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+                        {emailSuccess}
+                    </div>
+                )}
             </div>
 
             {/* Error Message */}
@@ -452,6 +613,60 @@ export function UserManagement() {
                                         <Trash2 strokeWidth={1.5} className="w-4 h-4" />
                                     )}
                                     Terminate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Broadcast Confirmation Modal */}
+            {sendConfirmOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        onClick={() => !emailSending && setSendConfirmOpen(false)}
+                    />
+                    <div className="relative w-full max-w-lg bg-white dark:bg-[#111111] rounded-xl shadow-2xl border border-slate-200/60 dark:border-white/10 overflow-hidden animate-slide-up">
+                        <div className="p-6">
+                            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 border border-primary-100 dark:border-primary-500/20 flex items-center justify-center mb-5">
+                                <Send strokeWidth={1.5} className="w-6 h-6 text-primary-500" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                                Send Broadcast Email
+                            </h3>
+                            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                                This will email <strong className="text-slate-900 dark:text-white">{emailRecipientCount}</strong> registered users.
+                            </p>
+                            <div className="bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-lg p-4 text-[12px] text-slate-600 dark:text-slate-400 space-y-3 mb-6">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Subject</p>
+                                    <p className="font-semibold text-slate-800 dark:text-slate-200">{emailSubject || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Message</p>
+                                    <p className="font-medium whitespace-pre-line">{emailBody || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setSendConfirmOpen(false)}
+                                    disabled={emailSending}
+                                    className="flex-1 px-4 py-2.5 text-[13px] font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={sendBroadcastEmail}
+                                    disabled={!canSendEmail || emailSending}
+                                    className="flex-1 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-white/10 text-white text-[13px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
+                                >
+                                    {emailSending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Send strokeWidth={1.5} className="w-4 h-4" />
+                                    )}
+                                    Confirm Send
                                 </button>
                             </div>
                         </div>
