@@ -1,9 +1,11 @@
 // Service Worker for Night Market Ops Center PWA
-const CACHE_NAME = 'opscenter-v1';
+const CACHE_NAME = 'opscenter-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
 ];
 
 // Install event - cache static assets
@@ -37,20 +39,29 @@ self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
 
-    // Skip API and Supabase requests (handle them with network only)
+    // Skip API, Supabase, and external resource requests
     const url = new URL(event.request.url);
-    if (url.pathname.startsWith('/api') || url.hostname.includes('supabase')) {
+    const externalHosts = [
+        'supabase',
+        'fonts.googleapis.com',
+        'fonts.gstatic.com',
+        'grainy-gradients.vercel.app'
+    ];
+
+    if (url.pathname.startsWith('/api') || externalHosts.some(host => url.hostname.includes(host))) {
         return;
     }
 
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                // Clone the response before caching
-                const responseToCache = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
+                // Only cache successful responses.
+                if (response && response.ok) {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+                }
                 return response;
             })
             .catch(() => {

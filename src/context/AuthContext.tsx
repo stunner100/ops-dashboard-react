@@ -90,6 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     let activeUserId: string | null = null;
 
+    const AUTH_INIT_TIMEOUT_MS = 10_000;
+    const AUTH_PROFILE_TIMEOUT_MS = 10_000;
+
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Timed out')), ms);
+      });
+
+      try {
+        return await Promise.race([promise, timeoutPromise]);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
+    };
+
     const applySession = (currentSession: Session | null) => {
       if (!isMounted) return;
       setSession(currentSession);
@@ -106,15 +122,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const init = async () => {
       setLoading(true);
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession } } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_INIT_TIMEOUT_MS
+        );
         applySession(initialSession);
         if (initialSession?.user) {
-          await loadProfileFor(initialSession.user);
+          await withTimeout(loadProfileFor(initialSession.user), AUTH_PROFILE_TIMEOUT_MS);
         } else {
           setProfile(null);
         }
       } catch (err) {
-        console.error('Error getting session:', err);
+        console.error('Error initializing auth:', err);
+        // Fail open to unauthenticated state instead of infinite spinner.
+        applySession(null);
+        setProfile(null);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -127,11 +149,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, currentSession) => {
         applySession(currentSession);
+
         if (currentSession?.user) {
           setLoading(true);
-          await loadProfileFor(currentSession.user);
-          if (isMounted) {
-            setLoading(false);
+          try {
+            await withTimeout(loadProfileFor(currentSession.user), AUTH_PROFILE_TIMEOUT_MS);
+          } catch (err) {
+            console.error('Error loading profile:', err);
+            if (isMounted) setProfile(buildFallbackProfile(currentSession.user));
+          } finally {
+            if (isMounted) setLoading(false);
           }
         } else if (isMounted) {
           setProfile(null);
@@ -144,11 +171,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [buildFallbackProfile, fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error: error as Error | null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unable to sign in. Please try again.');
+      return { error };
+    }
   };
 
   const signUp = async (email: string, password: string, fullName: string, role: 'customer_service' | 'rider_manager' | 'vendor_manager' | 'business_development_manager' | 'dashboard_support' | 'marketing_brands') => {
